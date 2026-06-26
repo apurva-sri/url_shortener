@@ -1,6 +1,8 @@
 const express = require("express");
 const cors = require("cors");
+const errorMiddleware = require("./middlewares/error.middleware");
 const urlRoutes = require("./routes/url.routes");
+const urlController = require("./controllers/url.controller");
 
 const app = express();
 
@@ -8,6 +10,9 @@ app.use(cors());
 app.use(express.json());
 
 app.use("/api/url", urlRoutes);
+app.get("/:shortCode", urlController.redirectUrl);
+
+app.use(errorMiddleware);
 
 app.get("/", (req,res)=>{
     res.json({

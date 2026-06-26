@@ -14,6 +14,45 @@ const createShortUrl = async (originalUrl) => {
   return url;
 };
 
+const getUrlByShortCode = async (shortCode) => {
+  return await prisma.url.findUnique({
+    where: {
+      shortCode,
+    },
+  });
+};
+
+const incrementClicks = async (shortCode) => {
+  return await prisma.url.update({
+    where: {
+      shortCode,
+    },
+    data: {
+      clicks: {
+        increment: 1,
+      },
+    },
+  });
+};
+
+const getUrlStats = async (shortCode) => {
+  return await prisma.url.findUnique({
+    where: {
+      shortCode,
+    },
+    select: {
+      originalUrl: true,
+      shortCode: true,
+      clicks: true,
+      createdAt: true,
+      isActive: true,
+    },
+  });
+};
+
 module.exports = {
   createShortUrl,
+  getUrlByShortCode,
+  incrementClicks,
+  getUrlStats,
 };

@@ -11,40 +11,29 @@ model User {
   id        String   @id @default(uuid())
   email     String   @unique
   password  String?
-
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
   urls      Url[]
 }
 
 model Url {
   id          String   @id @default(uuid())
-
   originalUrl String
   shortCode   String   @unique
-
   clicks      Int      @default(0)
-
   isActive    Boolean  @default(true)
-
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-
   userId      String?
-  user        User?    @relation(fields: [userId], references: [id])
-
   clickLogs   Click[]
+  user        User?    @relation(fields: [userId], references: [id])
 }
 
 model Click {
-  id         String   @id @default(uuid())
-
-  ipAddress  String?
-  userAgent  String?
-
-  createdAt  DateTime @default(now())
-
-  urlId      String
-  url        Url      @relation(fields: [urlId], references: [id])
+  id        String   @id @default(uuid())
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+  urlId     String
+  url       Url      @relation(fields: [urlId], references: [id])
 }
