@@ -40,6 +40,12 @@ const redirectUrl = catchAsync(async (req, res) => {
     throw new ApiError(410, "This link has been disabled");
   }
 
+  await urlService.logClick(
+    url.id,
+    req.ip,
+    req.get("User-Agent"), //Because Express normalizes headers and req.get() is the cleaner Express API.
+  );
+
   await urlService.incrementClicks(shortCode);
 
   return res.redirect(url.originalUrl);

@@ -50,9 +50,20 @@ const getUrlStats = async (shortCode) => {
   });
 };
 
+const logClick = async (urlId, ipAddress, userAgent) => {
+  return await prisma.click.create({
+    data: {
+      urlId,
+      ipAddress,
+      userAgent,
+    },
+  });
+};
+
 module.exports = {
   createShortUrl,
   getUrlByShortCode,
   incrementClicks,
   getUrlStats,
+  logClick
 };
