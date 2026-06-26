@@ -60,10 +60,34 @@ const logClick = async (urlId, ipAddress, userAgent) => {
   });
 };
 
+const logClickAndIncrement = async (urlId, shortCode, ipAddress, userAgent) => {
+  return await prisma.$transaction(async (tx) => {
+    await tx.click.create({
+      data: {
+        urlId,
+        ipAddress,
+        userAgent,
+      },
+    });
+
+    await tx.url.update({
+      where: {
+        shortCode,
+      },
+      data: {
+        clicks: {
+          increment: 1,
+        },
+      },
+    });
+  });
+};
+
 module.exports = {
   createShortUrl,
   getUrlByShortCode,
   incrementClicks,
   getUrlStats,
-  logClick
+  logClick,
+  logClickAndIncrement
 };
