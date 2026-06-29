@@ -92,6 +92,25 @@ const logClickAndIncrement = async (urlId, shortCode, ipAddress, userAgent) => {
   });
 };
 
+const getMyUrls = async (userId) => {
+  return await prisma.url.findMany({
+    where: {
+      userId,
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+    select: {
+      id: true,
+      originalUrl: true,
+      shortCode: true,
+      clicks: true,
+      isActive: true,
+      createdAt: true,
+    },
+  });
+};
+
 module.exports = {
   createShortUrl,
   getUrlById,
@@ -99,5 +118,6 @@ module.exports = {
   incrementClicks,
   getUrlStats,
   logClick,
-  logClickAndIncrement
+  logClickAndIncrement,
+  getMyUrls,
 };

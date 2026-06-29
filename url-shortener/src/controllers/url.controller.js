@@ -19,7 +19,7 @@ const createShortUrl = catchAsync(async (req, res) => {
     originalUrl: url,
     userId: req.user.id,
   });
-  
+
   return successResponse(res, {
     statusCode: 201,
     message: "Short URL created successfully",
@@ -69,8 +69,19 @@ const getUrlStats = catchAsync(async (req, res) => {
   });
 });
 
+const getMyUrls = catchAsync(async (req, res) => {
+  const urls = await urlService.getMyUrls(req.user.id);
+
+  return successResponse(res, {
+    statusCode: 200,
+    message: "URLs fetched successfully",
+    data: urls,
+  });
+});
+
 module.exports = {
   createShortUrl,
   redirectUrl,
-  getUrlStats
+  getUrlStats,
+  getMyUrls,
 };
