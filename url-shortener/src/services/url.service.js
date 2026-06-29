@@ -1,17 +1,26 @@
 const prisma = require("../config/db");
 const generateShortCode = require("../utils/generateShortCode");
 
-const createShortUrl = async (originalUrl) => {
+const createShortUrl = async ({originalUrl, userId,}) => {
   const shortCode = generateShortCode();
 
   const url = await prisma.url.create({
     data: {
       originalUrl,
       shortCode,
+      userId,
     },
   });
 
   return url;
+};
+
+const getUrlById = async (id) => {
+  return await prisma.url.findUnique({
+    where: {
+      id,
+    },
+  });
 };
 
 const getUrlByShortCode = async (shortCode) => {
@@ -85,6 +94,7 @@ const logClickAndIncrement = async (urlId, shortCode, ipAddress, userAgent) => {
 
 module.exports = {
   createShortUrl,
+  getUrlById,
   getUrlByShortCode,
   incrementClicks,
   getUrlStats,

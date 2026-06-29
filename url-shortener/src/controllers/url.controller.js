@@ -15,8 +15,11 @@ const createShortUrl = catchAsync(async (req, res) => {
     throw new ApiError(400, "Invalid URL");
   }
 
-  const result = await urlService.createShortUrl(url);
-
+  const result = await urlService.createShortUrl({
+    originalUrl: url,
+    userId: req.user.id,
+  });
+  
   return successResponse(res, {
     statusCode: 201,
     message: "Short URL created successfully",

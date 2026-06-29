@@ -22,6 +22,26 @@ const register = catchAsync(async (req, res) => {
   });
 });
 
+const login = catchAsync(async (req, res) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    throw new ApiError(400, "Email and password are required");
+  }
+
+  const result = await authService.login({
+    email,
+    password,
+  });
+
+  return successResponse(res, {
+    statusCode: 200,
+    message: "Login successful",
+    data: result,
+  });
+});
+
 module.exports = {
   register,
+  login,
 };
