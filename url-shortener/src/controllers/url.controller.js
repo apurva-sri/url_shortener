@@ -79,9 +79,44 @@ const getMyUrls = catchAsync(async (req, res) => {
   });
 });
 
+
+const updateUrl = catchAsync(async (req, res) => {
+  const { originalUrl, isActive } = req.body;
+
+  // Object that will be sent to Prisma
+  const updateData = {};
+
+  if (originalUrl !== undefined) {
+    if (!validator.isURL(originalUrl)) {
+      throw new ApiError(400, "Invalid URL");
+    }
+
+    updateData.originalUrl = originalUrl;
+  }
+
+  if (isActive !== undefined) {
+    updateData.isActive = isActive;
+  }
+
+  // Nothing to update
+  if (Object.keys(updateData).length === 0) {
+    throw new ApiError(400, "No fields provided to update");
+  }
+
+  const updatedUrl = await urlService.updateUrl(req.params.id, updateData);
+
+  return successResponse(res, {
+    statusCode: 200,
+    message: "URL updated successfully",
+    data: updatedUrl,
+  });
+});
+
+
 module.exports = {
   createShortUrl,
   redirectUrl,
   getUrlStats,
   getMyUrls,
+  updateUrl,
 };

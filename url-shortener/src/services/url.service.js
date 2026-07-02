@@ -111,6 +111,15 @@ const getMyUrls = async (userId) => {
   });
 };
 
+const updateUrl = async (id, data) => {
+  return await prisma.url.update({
+    where: {
+      id,
+    },
+    data,
+  });
+};
+
 module.exports = {
   createShortUrl,
   getUrlById,
@@ -120,4 +129,5 @@ module.exports = {
   logClick,
   logClickAndIncrement,
   getMyUrls,
+  updateUrl,
 };
