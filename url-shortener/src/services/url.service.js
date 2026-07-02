@@ -94,24 +94,47 @@ const logClickAndIncrement = async (urlId, shortCode, ipAddress, userAgent) => {
   });
 };
 
-const getMyUrls = async (userId) => {
-  return await prisma.url.findMany({
-    where: {
-      userId,
-      isActive: true,
+const getMyUrls = async (userId, page, limit) => {
+  const skip = (page - 1) * limit;
+
+  const [urls, totalUrls] = await Promise.all([// prormise all se dono calls sath mein run hongi nhi toh aise hume two alg alg calls lagani padengi.
+    prisma.url.findMany({
+      where: {
+        userId,
+        isActive: true,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      skip,
+      take: limit,
+      select: {
+        id: true,
+        originalUrl: true,
+        shortCode: true,
+        clicks: true,
+        isActive: true,
+        createdAt: true,
+      },
+    }),
+
+    prisma.url.count({
+      where: {
+        userId,
+        isActive: true,
+      },
+    }),
+  ]);
+
+  return {
+    urls,
+    pagination: {
+      total: totalUrls,
+      page,
+      limit,
+      totalPages: Math.ceil(totalUrls / limit),
     },
-    orderBy: {
-      createdAt: "desc",
-    },
-    select: {
-      id: true,
-      originalUrl: true,
-      shortCode: true,
-      clicks: true,
-      isActive: true,
-      createdAt: true,
-    },
-  });
+  };
 };
 
 const updateUrl = async (id, data) => {

@@ -70,12 +70,16 @@ const getUrlStats = catchAsync(async (req, res) => {
 });
 
 const getMyUrls = catchAsync(async (req, res) => {
-  const urls = await urlService.getMyUrls(req.user.id);
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 10;
+
+  const result = await urlService.getMyUrls(req.user.id, page, limit);
 
   return successResponse(res, {
     statusCode: 200,
     message: "URLs fetched successfully",
-    data: urls,
+    data: result.urls,
+    pagination: result.pagination,
   });
 });
 
