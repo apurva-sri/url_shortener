@@ -16,9 +16,11 @@ const createShortUrl = async ({originalUrl, userId,}) => {
 };
 
 const getUrlById = async (id) => {
-  return await prisma.url.findUnique({
+  return await prisma.url.findFirst({
+    //Findunique() only accepts unique fields. the query is no longer based solely on a unique field, so Prisma requires findFirst()
     where: {
       id,
+      isActive: true,
     },
   });
 };
@@ -96,6 +98,7 @@ const getMyUrls = async (userId) => {
   return await prisma.url.findMany({
     where: {
       userId,
+      isActive: true,
     },
     orderBy: {
       createdAt: "desc",
@@ -120,6 +123,17 @@ const updateUrl = async (id, data) => {
   });
 };
 
+const deleteUrl = async (id) => {
+  return await prisma.url.update({
+    where: {
+      id,
+    },
+    data: {
+      isActive: false,
+    },
+  });
+};
+
 module.exports = {
   createShortUrl,
   getUrlById,
@@ -130,4 +144,5 @@ module.exports = {
   logClickAndIncrement,
   getMyUrls,
   updateUrl,
+  deleteUrl,
 };

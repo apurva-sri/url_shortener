@@ -112,6 +112,14 @@ const updateUrl = catchAsync(async (req, res) => {
   });
 });
 
+const deleteUrl = catchAsync(async (req, res) => {
+  await urlService.deleteUrl(req.params.id);
+
+  return successResponse(res, {
+    statusCode: 200,
+    message: "URL deleted successfully",
+  });
+});
 
 module.exports = {
   createShortUrl,
@@ -119,4 +127,5 @@ module.exports = {
   getUrlStats,
   getMyUrls,
   updateUrl,
+  deleteUrl,
 };
