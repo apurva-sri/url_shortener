@@ -93,7 +93,7 @@ const logClickAndIncrement = async (urlId, shortCode, ipAddress, userAgent) => {
   });
 };
 
-const getMyUrls = async (userId, page, limit, search) => {
+const getMyUrls = async (userId, page, limit, search, sortBy, order) => {
   const skip = (page - 1) * limit;
 
   const where = {
@@ -118,12 +118,14 @@ const getMyUrls = async (userId, page, limit, search) => {
     ];
   }
 
+  const orderBy = {
+    [sortBy]: order,
+  };
+
   const [urls, totalUrls] = await Promise.all([
     prisma.url.findMany({
       where,
-      orderBy: {
-        createdAt: "desc",
-      },
+      orderBy,
       skip,
       take: limit,
       select: {
