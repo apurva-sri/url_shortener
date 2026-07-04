@@ -72,8 +72,9 @@ const getUrlStats = catchAsync(async (req, res) => {
 const getMyUrls = catchAsync(async (req, res) => {
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 10;
-
-  const result = await urlService.getMyUrls(req.user.id, page, limit);
+  const search = req.query.search?.trim() || "";
+  //searching is done using both originalUrl or shortCode.
+  const result = await urlService.getMyUrls(req.user.id, page, limit, search);
 
   return successResponse(res, {
     statusCode: 200,
