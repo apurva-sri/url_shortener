@@ -23,7 +23,27 @@ const login = catchAsync(async (req, res) => {
   });
 });
 
+const emailService = require("../services/email.service");
+
+const testEmail = catchAsync(async (req, res) => {
+  await emailService.sendEmail({
+    to: req.body.email,
+    subject: "Email Service Working",
+    html: `
+      <h1>Hello Apurva 🚀</h1>
+
+      <p>Email service is working successfully.</p>
+    `,
+  });
+
+  return successResponse(res, {
+    statusCode: 200,
+    message: "Email sent successfully",
+  });
+});
+
 module.exports = {
   register,
   login,
+  testEmail
 };

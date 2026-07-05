@@ -6,5 +6,5 @@ const { registerSchema, loginSchema } = require("../validators/auth.validator");
 
 router.post("/register", validate(registerSchema), authController.register);
 router.post("/login", validate(loginSchema), authController.login);
-
+router.post("/test-email", authController.testEmail);
 module.exports = router;
