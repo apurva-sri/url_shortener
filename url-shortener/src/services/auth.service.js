@@ -130,6 +130,10 @@ const login = async ({ email, password }) => {
     throw new ApiError(401, "Invalid email or password");
   }
 
+  if (!user.isVerified) {
+    throw new ApiError(403, "Please verify your email before logging in.");
+  }
+
   const token = generateToken({
     userId: user.id,
     email: user.email,
