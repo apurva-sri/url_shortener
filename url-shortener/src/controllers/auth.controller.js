@@ -8,7 +8,9 @@ const register = catchAsync(async (req, res) => {
 
   return successResponse(res, {
     statusCode: 201,
-    message: "Registration successful",
+
+    message: "OTP sent successfully",
+
     data: result,
   });
 });
