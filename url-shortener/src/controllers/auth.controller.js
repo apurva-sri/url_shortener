@@ -56,9 +56,22 @@ const testEmail = catchAsync(async (req, res) => {
   });
 });
 
+const resendOTP = catchAsync(async (req, res) => {
+  const result = await authService.resendOTP(req.body);
+
+  return successResponse(res, {
+    statusCode: 200,
+
+    message: "OTP sent successfully",
+
+    data: result,
+  });
+});
+
 module.exports = {
   register,
   login,
   verifyEmail,
-  // testEmail
+  // testEmail,
+  resendOTP,
 };

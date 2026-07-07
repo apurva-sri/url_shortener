@@ -145,9 +145,48 @@ const login = async ({ email, password }) => {
   };
 };
 
+const resendOTP = async ({ email }) => {
+  const user = await prisma.user.findUnique({
+    where: {
+      email,
+    },
+  });
+
+  if (!user) {
+    throw new ApiError(404, "User not found");
+  }
+
+  if (user.isVerified) {
+    throw new ApiError(400, "Email already verified");
+  }
+
+  const otp = await otpService.resendOTP(email);
+
+  await emailService.sendEmail({
+    to: email,
+
+    subject: "Verify Your Email",
+
+    html: `
+      <h2>Verify Your Email</h2>
+
+      <p>Your OTP is:</p>
+
+      <h1>${otp}</h1>
+
+      <p>This OTP expires in 5 minutes.</p>
+    `,
+  });
+
+  return {
+    email,
+  };
+};
+
 
 module.exports = {
   register,
   login,
   verifyEmail,
+  resendOTP,
 };
