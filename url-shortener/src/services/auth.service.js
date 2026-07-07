@@ -65,6 +65,54 @@ const register = async ({ email, password }) => {
   }
 };
 
+const verifyEmail = async ({ email, otp }) => {
+  const user = await prisma.user.findUnique({
+    where: {
+      email,
+    },
+  });
+
+  if (!user) {
+    throw new ApiError(404, "User not found");
+  }
+
+  if (user.isVerified) {
+    throw new ApiError(400, "Email already verified");
+  }
+
+  await otpService.verifyOTP(email, otp);
+
+  const updatedUser = await prisma.user.update({
+    where: {
+      email,
+    },
+
+    data: {
+      isVerified: true,
+    },
+  });
+
+  await otpService.deleteOTP(email);
+
+  const token = generateToken({
+    userId: updatedUser.id,
+
+    email: updatedUser.email,
+  });
+
+  return {
+    user: {
+      id: updatedUser.id,
+
+      email: updatedUser.email,
+
+      createdAt: updatedUser.createdAt,
+    },
+
+    token,
+  };
+};
+
 const login = async ({ email, password }) => {
   const user = await prisma.user.findUnique({
     where: {
@@ -101,4 +149,5 @@ const login = async ({ email, password }) => {
 module.exports = {
   register,
   login,
+  verifyEmail,
 };

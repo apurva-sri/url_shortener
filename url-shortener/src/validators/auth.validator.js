@@ -12,7 +12,14 @@ const loginSchema = Joi.object({
   password: Joi.string().required(),
 });
 
+const verifyEmailSchema = Joi.object({
+  email: Joi.string().email().trim().required(),
+
+  otp: Joi.string().length(6).required(),
+});
+
 module.exports = {
   registerSchema,
   loginSchema,
+  verifyEmailSchema,
 };

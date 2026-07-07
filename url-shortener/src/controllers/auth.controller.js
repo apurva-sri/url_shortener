@@ -15,6 +15,18 @@ const register = catchAsync(async (req, res) => {
   });
 });
 
+const verifyEmail = catchAsync(async (req, res) => {
+  const result = await authService.verifyEmail(req.body);
+
+  return successResponse(res, {
+    statusCode: 200,
+
+    message: "Email verified successfully",
+
+    data: result,
+  });
+});
+
 const login = catchAsync(async (req, res) => {
   const result = await authService.login(req.body);
 
@@ -47,5 +59,6 @@ const testEmail = catchAsync(async (req, res) => {
 module.exports = {
   register,
   login,
-  testEmail
+  verifyEmail,
+  // testEmail
 };
