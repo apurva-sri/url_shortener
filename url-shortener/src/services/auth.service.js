@@ -4,6 +4,7 @@ const { generateToken } = require("../utils/jwt");
 const ApiError = require("../utils/ApiError");
 const otpService = require("./otp.service");
 const emailService = require("./email.service");
+const verifyEmailTemplate = require("../templates/verifyEmail.template");
 
 const register = async ({ email, password }) => {
   const existingUser = await prisma.user.findUnique({
@@ -31,15 +32,11 @@ const register = async ({ email, password }) => {
   try {
     const otp = await otpService.storeOTP(email);
 
+    const emailContent = verifyEmailTemplate(otp);
+
     await emailService.sendEmail({
       to: email,
-      subject: "Verify Your Email",
-      html: `
-        <h2>Verify Your Email</h2>
-        <p>Your OTP is:</p>
-        <h1>${otp}</h1>
-        <p>This OTP expires in 5 minutes.</p>
-      `,
+      ...emailContent,
     });
 
     return {
@@ -166,20 +163,11 @@ const resendOTP = async ({ email }) => {
 
   const otp = await otpService.resendOTP(email);
 
+  const emailContent = verifyEmailTemplate(otp);
+
   await emailService.sendEmail({
     to: email,
-
-    subject: "Verify Your Email",
-
-    html: `
-      <h2>Verify Your Email</h2>
-
-      <p>Your OTP is:</p>
-
-      <h1>${otp}</h1>
-
-      <p>This OTP expires in 5 minutes.</p>
-    `,
+    ...emailContent,
   });
 
   return {
