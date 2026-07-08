@@ -3,12 +3,14 @@ const urlService = require("../services/url.service");
 const catchAsync = require("../utils/catchAsync");
 const ApiError = require("../utils/ApiError");
 const { successResponse } = require("../utils/apiResponse");
+const isExpired = require("../utils/isExpired");
 
 const createShortUrl = catchAsync(async (req, res) => {
   const result = await urlService.createShortUrl({
     originalUrl: req.body.originalUrl,
     alias: req.body.alias,
-    userId: req.user?.id,
+    expiresAt: req.body.expiresAt,
+    userId: req.user.id,
   });
 
   return successResponse(res, {
@@ -17,6 +19,7 @@ const createShortUrl = catchAsync(async (req, res) => {
     data: {
       shortCode: result.shortCode,
       shortUrl: `${process.env.BASE_URL}/${result.shortCode}`,
+      expiresAt: result.expiresAt,
     },
   });
 });
@@ -28,6 +31,10 @@ const redirectUrl = catchAsync(async (req, res) => {
 
   if (!url) {
     throw new ApiError(404, "Short URL not found");
+  }
+
+  if (isExpired(url.expiresAt)) {
+    throw new ApiError(410, "This link has expired");
   }
 
   if (!url.isActive) {

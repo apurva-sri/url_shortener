@@ -23,6 +23,7 @@ model Url {
   shortCode   String   @unique
   clicks      Int      @default(0)
   isActive    Boolean  @default(true)
+  expiresAt   DateTime?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   userId      String?

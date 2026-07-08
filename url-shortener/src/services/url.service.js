@@ -3,7 +3,7 @@ const generateShortCode = require("../utils/generateShortCode");
 const { RESERVED_ALIASES } = require("../config/constants");
 const ApiError = require("../utils/ApiError");
 
-const createShortUrl = async ({ originalUrl, alias, userId }) => {
+const createShortUrl = async ({ originalUrl, alias, expiresAt, userId }) => {
   if (alias && !userId) {
     throw new ApiError(403, "Login required to use custom alias.");
   }
@@ -30,9 +30,11 @@ const createShortUrl = async ({ originalUrl, alias, userId }) => {
     data: {
       originalUrl,
       shortCode,
+      expiresAt,
       userId,
     },
   });
+
   return url;
 };
 

@@ -12,8 +12,12 @@ const createUrlSchema = Joi.object({
     .lowercase()
     .min(3)
     .max(30)
-    .pattern(/^[a-zA-Z0-9_-]+$/)
+    .pattern(/^[a-z0-9_-]+$/)
     .optional(),
+
+  expiresAt: Joi.date().greater("now").optional(),
 });
 
-module.exports = { createUrlSchema };
+module.exports = {
+  createUrlSchema,
+};
