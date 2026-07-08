@@ -5,19 +5,10 @@ const ApiError = require("../utils/ApiError");
 const { successResponse } = require("../utils/apiResponse");
 
 const createShortUrl = catchAsync(async (req, res) => {
-  const { url } = req.body;
-
-  if (!url) {
-    throw new ApiError(400, "URL is required");
-  }
-
-  if (!validator.isURL(url)) {
-    throw new ApiError(400, "Invalid URL");
-  }
-
   const result = await urlService.createShortUrl({
-    originalUrl: url,
-    userId: req.user.id,
+    originalUrl: req.body.originalUrl,
+    alias: req.body.alias,
+    userId: req.user?.id,
   });
 
   return successResponse(res, {
@@ -100,7 +91,6 @@ const getMyUrls = catchAsync(async (req, res) => {
   });
 });
 
-
 const updateUrl = catchAsync(async (req, res) => {
   const { originalUrl, isActive } = req.body;
 
@@ -124,7 +114,11 @@ const updateUrl = catchAsync(async (req, res) => {
     throw new ApiError(400, "No fields provided to update");
   }
 
-  const updatedUrl = await urlService.updateUrl(req.params.id, updateData);
+  const updatedUrl = await urlService.updateUrl(
+    req.params.id,
+    req.user.id,
+    updateData,
+  );
 
   return successResponse(res, {
     statusCode: 200,
@@ -134,7 +128,7 @@ const updateUrl = catchAsync(async (req, res) => {
 });
 
 const deleteUrl = catchAsync(async (req, res) => {
-  await urlService.deleteUrl(req.params.id);
+  await urlService.deleteUrl(req.params.id, req.user.id);
 
   return successResponse(res, {
     statusCode: 200,

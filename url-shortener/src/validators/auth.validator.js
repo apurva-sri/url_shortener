@@ -15,7 +15,10 @@ const loginSchema = Joi.object({
 const verifyEmailSchema = Joi.object({
   email: Joi.string().email().trim().required(),
 
-  otp: Joi.string().length(6).required(),
+  otp: Joi.string()
+    .length(6)
+    .pattern(/^[0-9]+$/)
+    .required(),
 });
 
 const resendOTPSchema = Joi.object({

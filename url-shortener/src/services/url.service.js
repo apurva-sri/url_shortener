@@ -1,8 +1,30 @@
 const prisma = require("../config/db");
 const generateShortCode = require("../utils/generateShortCode");
+const { RESERVED_ALIASES } = require("../config/constants");
+const ApiError = require("../utils/ApiError");
 
-const createShortUrl = async ({originalUrl, userId,}) => {
-  const shortCode = generateShortCode();
+const createShortUrl = async ({ originalUrl, alias, userId }) => {
+  if (alias && !userId) {
+    throw new ApiError(403, "Login required to use custom alias.");
+  }
+
+  if (alias && RESERVED_ALIASES.includes(alias)) {
+    throw new ApiError(400, "This alias is reserved.");
+  }
+
+  if (alias) {
+    const existing = await prisma.url.findUnique({
+      where: {
+        shortCode: alias,
+      },
+    });
+
+    if (existing) {
+      throw new ApiError(409, "Alias already exists.");
+    }
+  }
+
+  const shortCode = alias || generateShortCode();
 
   const url = await prisma.url.create({
     data: {
@@ -14,15 +36,15 @@ const createShortUrl = async ({originalUrl, userId,}) => {
   return url;
 };
 
-const getUrlById = async (id) => {
-  return await prisma.url.findFirst({
-    //Findunique() only accepts unique fields. the query is no longer based solely on a unique field, so Prisma requires findFirst()
-    where: {
-      id,
-      isActive: true,
-    },
-  });
-};
+// const getUrlById = async (id) => {
+//   return await prisma.url.findFirst({
+//     //Findunique() only accepts unique fields. the query is no longer based solely on a unique field, so Prisma requires findFirst()
+//     where: {
+//       id,
+//       isActive: true,
+//     },
+//   });
+// };
 
 const getUrlByShortCode = async (shortCode) => {
   return await prisma.url.findUnique({
@@ -154,16 +176,41 @@ const getMyUrls = async (userId, page, limit, search, sortBy, order) => {
   };
 };
 
-const updateUrl = async (id, data) => {
+const updateUrl = async (id, userId, data) => {
+  const url = await prisma.url.findFirst({
+    where: {
+      id,
+      userId,
+      isActive: true,
+    },
+  });
+
+  if(!url){
+    throw new ApiError(404, "URL not found");
+  }
+
   return await prisma.url.update({
     where: {
       id,
     },
+
     data,
   });
 };
 
-const deleteUrl = async (id) => {
+const deleteUrl = async (id, userId) => {
+  const url = await prisma.url.findFirst({
+    where: {
+      id,
+      userId,
+      isActive: true,
+    },
+  });
+
+  if (!url) {
+    throw new ApiError(404, "URL not found");
+  }
+
   return await prisma.url.update({
     where: {
       id,
@@ -176,7 +223,6 @@ const deleteUrl = async (id) => {
 
 module.exports = {
   createShortUrl,
-  getUrlById,
   getUrlByShortCode,
   incrementClicks,
   getUrlStats,
