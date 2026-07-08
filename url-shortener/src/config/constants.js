@@ -4,6 +4,8 @@ const OTP_MAX_ATTEMPTS = 5;
 
 const OTP_RESEND_COOLDOWN = 60;
 
+const BCRYPT_SALT_ROUNDS = 10;
+
 const RESERVED_ALIASES = [
   "login",
   "register",
@@ -22,4 +24,5 @@ module.exports = {
   OTP_MAX_ATTEMPTS,
   OTP_RESEND_COOLDOWN,
   RESERVED_ALIASES,
+  BCRYPT_SALT_ROUNDS,
 };

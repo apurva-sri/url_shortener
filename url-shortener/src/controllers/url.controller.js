@@ -33,12 +33,23 @@ const redirectUrl = catchAsync(async (req, res) => {
     throw new ApiError(404, "Short URL not found");
   }
 
+  if (!url.isActive) {
+    throw new ApiError(410, "This link has been disabled");
+  }
+
   if (isExpired(url.expiresAt)) {
     throw new ApiError(410, "This link has expired");
   }
 
-  if (!url.isActive) {
-    throw new ApiError(410, "This link has been disabled");
+  if (url.password) {
+    return successResponse(res, {
+      statusCode: 200,
+      message: "Password required",
+      data: {
+        passwordRequired: true,
+        shortCode:false,
+      },
+    });
   }
 
   await urlService.logClickAndIncrement(
@@ -143,6 +154,43 @@ const deleteUrl = catchAsync(async (req, res) => {
   });
 });
 
+const enablePasswordProtection = catchAsync(async (req, res) => {
+  await urlService.enablePasswordProtection(
+    req.params.id,
+    req.user.id,
+    req.body.password,
+  );
+
+  return successResponse(res, {
+    statusCode: 200,
+    message: "Password protection enabled successfully",
+  });
+});
+
+const removePasswordProtection = catchAsync(async (req, res) => {
+  await urlService.removePasswordProtection(req.params.id, req.user.id);
+
+  return successResponse(res, {
+    statusCode: 200,
+    message: "Password protection removed successfully",
+  });
+});
+
+const verifyUrlPassword = catchAsync(async (req, res) => {
+  const result = await urlService.verifyUrlPassword(
+    req.body.shortCode,
+    req.body.password,
+    req.ip,
+    req.get("User-Agent"),
+  );
+
+  return successResponse(res, {
+    statusCode: 200,
+    message: "Password verified successfully",
+    data: result,
+  });
+});
+
 module.exports = {
   createShortUrl,
   redirectUrl,
@@ -150,4 +198,7 @@ module.exports = {
   getMyUrls,
   updateUrl,
   deleteUrl,
+  enablePasswordProtection,
+  removePasswordProtection,
+  verifyUrlPassword,
 };

@@ -1,7 +1,8 @@
 const prisma = require("../config/db");
 const generateShortCode = require("../utils/generateShortCode");
-const { RESERVED_ALIASES } = require("../config/constants");
+const { RESERVED_ALIASES, BCRYPT_SALT_ROUNDS } = require("../config/constants");
 const ApiError = require("../utils/ApiError");
+const bcrypt = require("bcrypt");
 
 const createShortUrl = async ({ originalUrl, alias, expiresAt, userId }) => {
   if (alias && !userId) {
@@ -223,6 +224,92 @@ const deleteUrl = async (id, userId) => {
   });
 };
 
+const enablePasswordProtection = async (id, userId, password) => {
+  const url = await prisma.url.findFirst({
+    where: {
+      id,
+      userId,
+      isActive: true,
+    },
+  });
+
+  if (!url) {
+    throw new ApiError(404, "URL not found");
+  }
+
+  const hashedPassword = await bcrypt.hash(password, BCRYPT_SALT_ROUNDS);
+
+  return await prisma.url.update({
+    where: {
+      id,
+    },
+    data: {
+      password: hashedPassword,
+    },
+    select: {
+      id: true,
+      shortCode: true,
+      password: false,
+    },
+  });
+};
+
+const removePasswordProtection = async (id, userId) => {
+  const url = await prisma.url.findFirst({
+    where: {
+      id,
+      userId,
+      isActive: true,
+    },
+  });
+
+  if (!url) {
+    throw new ApiError(404, "URL not found");
+  }
+
+  return await prisma.url.update({
+    where: {
+      id,
+    },
+    data: {
+      password: null,
+    },
+    select: {
+      id: true,
+      shortCode: true,
+    },
+  });
+};
+
+const verifyUrlPassword = async (shortCode, password, ipAddress, userAgent) => {
+  const url = await prisma.url.findUnique({
+    where: {
+      shortCode,
+    },
+  });
+
+  if (!url) {
+    throw new ApiError(404, "Short URL not found");
+  }
+
+  if (!url.password) {
+    throw new ApiError(400, "This URL is not password protected");
+  }
+
+  const isPasswordCorrect = await bcrypt.compare(password, url.password);
+
+  if (!isPasswordCorrect) {
+    throw new ApiError(401, "Invalid password");
+  }
+
+  await logClickAndIncrement(url.id, shortCode, ipAddress, userAgent);
+
+  return {
+    originalUrl: url.originalUrl,
+  };
+};
+
+
 module.exports = {
   createShortUrl,
   getUrlByShortCode,
@@ -233,4 +320,7 @@ module.exports = {
   getMyUrls,
   updateUrl,
   deleteUrl,
+  enablePasswordProtection,
+  removePasswordProtection,
+  verifyUrlPassword,
 };
