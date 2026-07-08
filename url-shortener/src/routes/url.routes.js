@@ -31,5 +31,6 @@ router.patch(
   urlController.enablePasswordProtection,
 );
 router.delete("/:id/password", protect, urlController.removePasswordProtection);
+router.get("/:id/qr", protect, urlController.getQRCode);
 
 module.exports = router;

@@ -191,6 +191,16 @@ const verifyUrlPassword = catchAsync(async (req, res) => {
   });
 });
 
+const getQRCode = catchAsync(async (req, res) => {
+  const result = await urlService.getQRCode(req.params.id, req.user.id);
+
+  return successResponse(res, {
+    statusCode: 200,
+    message: "QR Code generated successfully",
+    data: result,
+  });
+});
+
 module.exports = {
   createShortUrl,
   redirectUrl,
@@ -201,4 +211,5 @@ module.exports = {
   enablePasswordProtection,
   removePasswordProtection,
   verifyUrlPassword,
+  getQRCode,
 };

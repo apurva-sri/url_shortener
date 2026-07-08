@@ -1,8 +1,14 @@
 const prisma = require("../config/db");
 const generateShortCode = require("../utils/generateShortCode");
-const { RESERVED_ALIASES, BCRYPT_SALT_ROUNDS } = require("../config/constants");
+const {
+  RESERVED_ALIASES,
+  BCRYPT_SALT_ROUNDS,
+  QR_CACHE_TTL,
+} = require("../config/constants");
 const ApiError = require("../utils/ApiError");
 const bcrypt = require("bcrypt");
+const qrService = require("./qr.service");
+const { redisClient } = require("../config/redis");
 
 const createShortUrl = async ({ originalUrl, alias, expiresAt, userId }) => {
   if (alias && !userId) {
@@ -309,6 +315,41 @@ const verifyUrlPassword = async (shortCode, password, ipAddress, userAgent) => {
   };
 };
 
+const getQRCode = async (id, userId) => {
+  const url = await prisma.url.findFirst({
+    where: {
+      id,
+      userId,
+      isActive: true,
+    },
+  });
+
+  if (!url) {
+    throw new ApiError(404, "URL not found");
+  }
+
+  const cacheKey = `qr:${url.shortCode}`;
+
+  const cachedQRCode = await redisClient.get(cacheKey);
+
+  if (cachedQRCode) {
+    return {
+      qrCode: cachedQRCode,
+    };
+  }
+
+  const shortUrl = `${process.env.BASE_URL}/${url.shortCode}`;
+
+  const qrCode = await qrService.generateQRCode(shortUrl);
+
+  await redisClient.set(cacheKey, qrCode, {
+    EX: QR_CACHE_TTL, // 24 Hours
+  });
+
+  return {
+    qrCode,
+  };
+};
 
 module.exports = {
   createShortUrl,
@@ -323,4 +364,5 @@ module.exports = {
   enablePasswordProtection,
   removePasswordProtection,
   verifyUrlPassword,
+  getQRCode,
 };
