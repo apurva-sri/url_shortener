@@ -7,6 +7,7 @@ const {
   rateLimiter,
 } = require("./config/security");
 const errorMiddleware = require("./middlewares/error.middleware");
+const healthRoutes = require("./routes/health.routes");
 const urlRoutes = require("./routes/url.routes");
 const urlController = require("./controllers/url.controller");
 const authRoutes = require("./routes/auth.routes");
@@ -24,8 +25,13 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 
 app.use(helmetMiddleware);
+
 app.use(compressionMiddleware);
+
 app.use(requestLogger);
+
+app.use("/health", healthRoutes);
+
 app.use("/api", rateLimiter);
 
 app.get("/", (req, res) => {
@@ -43,3 +49,6 @@ app.get("/:shortCode", urlController.redirectUrl);
 app.use(errorMiddleware);
 
 module.exports = app;
+
+// Phase 10 — Batch 2
+// Health Check + Graceful Shutdown
