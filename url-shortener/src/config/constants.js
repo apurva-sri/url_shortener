@@ -27,6 +27,8 @@ const QR_CODE_OPTIONS = {
 
 const QR_CACHE_TTL = 60 * 60 * 24;
 
+const ANALYTICS_CACHE_TTL = 60 * 5;
+
 module.exports = {
   OTP_TTL_SECONDS,
   OTP_MAX_ATTEMPTS,
@@ -35,4 +37,5 @@ module.exports = {
   BCRYPT_SALT_ROUNDS,
   QR_CODE_OPTIONS,
   QR_CACHE_TTL,
+  ANALYTICS_CACHE_TTL,
 };

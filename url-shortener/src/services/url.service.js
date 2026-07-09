@@ -102,7 +102,7 @@ const logClick = async (urlId, ipAddress, userAgent) => {
 };
 
 const logClickAndIncrement = async (urlId, shortCode, ipAddress, userAgent) => {
-  return await prisma.$transaction(async (tx) => {
+  await prisma.$transaction(async (tx) => {
     await tx.click.create({
       data: {
         urlId,
@@ -122,6 +122,8 @@ const logClickAndIncrement = async (urlId, shortCode, ipAddress, userAgent) => {
       },
     });
   });
+
+  await redisClient.del(`analytics:${urlId}`);
 };
 
 const getMyUrls = async (userId, page, limit, search, sortBy, order) => {

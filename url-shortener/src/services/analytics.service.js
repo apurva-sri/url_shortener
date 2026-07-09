@@ -2,8 +2,18 @@ const prisma = require("../config/db");
 const UAParser = require("ua-parser-js");
 const ApiError = require("../utils/ApiError");
 const {maskIp} = require("../utils/maskIp");
+const { redisClient } = require("../config/redis");
+const { ANALYTICS_CACHE_TTL } = require("../config/constants");
 
 const getUrlAnalytics = async (urlId, userId) => {
+    const cacheKey = `analytics:${urlId}`;
+
+    const cachedAnalytics = await redisClient.get(cacheKey);
+
+    if (cachedAnalytics) {
+      return JSON.parse(cachedAnalytics);
+    }
+
   const url = await prisma.url.findFirst({
     where: {
       id: urlId,
@@ -75,7 +85,7 @@ const getUrlAnalytics = async (urlId, userId) => {
 
   const latestVisitors = recentVisitors.slice(0, 10);
 
-  return {
+  const analytics = {
     totalClicks: url.clicks,
 
     deviceStats: deviceStatsArray,
@@ -86,6 +96,12 @@ const getUrlAnalytics = async (urlId, userId) => {
 
     recentVisitors: latestVisitors,
   };
+
+  await redisClient.set(cacheKey, JSON.stringify(analytics), {
+    EX: ANALYTICS_CACHE_TTL,
+  });
+
+  return analytics;
 };
 
 module.exports = {
