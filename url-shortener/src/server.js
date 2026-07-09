@@ -2,6 +2,7 @@ const app = require("./app");
 const { connectRedis, redisClient } = require("./config/redis");
 const prisma = require("./config/db");
 const env = require("./config/env");
+const logger = require("./utils/logger");
 
 const PORT = env.PORT;
 
@@ -12,10 +13,10 @@ const startServer = async () => {
     await connectRedis();
 
     server = app.listen(PORT, () => {
-      console.log(`🚀 Server running on port ${PORT}`);
+      logger.info(`🚀 Server running on port ${PORT}`);
     });
   } catch (err) {
-    console.error("Failed to start server:", err);
+    logger.error("Failed to start server:", err);
     process.exit(1);
   }
 };
@@ -23,7 +24,7 @@ const startServer = async () => {
 startServer();
 
 const shutdown = async () => {
-  console.log("\n🛑 Shutting down server...");
+  logger.info("\n🛑 Shutting down server...");
 
   try {
     server.close(async () => {
@@ -33,11 +34,11 @@ const shutdown = async () => {
         await redisClient.quit();
       }
 
-      console.log("✅ Resources released successfully.");
+      logger.info("✅ Resources released successfully.");
       process.exit(0);
     });
   } catch (err) {
-    console.error("Shutdown error:", err);
+    logger.error("Shutdown error:", err);
     process.exit(1);
   }
 };

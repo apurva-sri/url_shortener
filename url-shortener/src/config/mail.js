@@ -1,8 +1,8 @@
 const nodemailer = require("nodemailer");
 const env = require("../config/env");
 
-// console.log(env.SMTP_EMAIL);
-// console.log(env.SMTP_PASSWORD);
+// logger.info(env.SMTP_EMAIL);
+// logger.info(env.SMTP_PASSWORD);
 const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
@@ -13,9 +13,9 @@ const transporter = nodemailer.createTransport({
 
 transporter.verify((error, success) => {
   if (error) {
-    console.log(error);
+    logger.info(error);
   } else {
-    console.log("SMTP Server Ready");
+    logger.info("SMTP Server Ready");
   }
 });
 

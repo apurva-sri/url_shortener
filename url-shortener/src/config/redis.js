@@ -6,13 +6,13 @@ const redisClient = createClient({
 });
 
 redisClient.on("error", (err) => {
-  console.error("Redis Error:", err);
+  logger.error("Redis Error:", err);
 });
 
 const connectRedis = async () => {
   if (!redisClient.isOpen) {
     await redisClient.connect();
-    console.log("✅ Redis Connected");
+    logger.info("✅ Redis Connected");
   }
 };
 

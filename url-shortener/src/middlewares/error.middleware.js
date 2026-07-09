@@ -1,7 +1,7 @@
 const { errorResponse } = require("../utils/apiResponse");
 
 const errorMiddleware = (err, req, res, next) => {
-  console.error(err);
+  logger.error(err);
 
   const statusCode = err.statusCode || 500;
 

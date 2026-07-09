@@ -8,14 +8,18 @@ const healthCheck = async (req, res) => {
   try {
     await prisma.$queryRaw`SELECT 1`;
     database = "connected";
-  } catch {}
+  } catch (error) {
+    logger.warn(error.message);
+  }
 
   try {
     if (redisClient.isOpen) {
       await redisClient.ping();
       redis = "connected";
     }
-  } catch {}
+  } catch (error) {
+    logger.warn(error.message);
+  }
 
   return res.status(200).json({
     success: true,

@@ -43,11 +43,10 @@ const register = async ({ email, password }) => {
       email: user.email,
     };
   } catch (error) {
-
     try {
       await otpService.deleteOTP(email);
     } catch (err) {
-      console.error("Failed to delete OTP:", err);
+      logger.error("Failed to delete OTP:", err);
     }
 
     try {
@@ -55,7 +54,7 @@ const register = async ({ email, password }) => {
         where: { id: user.id },
       });
     } catch (err) {
-      console.error("Failed to delete user:", err);
+      logger.error("Failed to delete user:", err);
     }
 
     throw error;
@@ -174,7 +173,6 @@ const resendOTP = async ({ email }) => {
     email,
   };
 };
-
 
 module.exports = {
   register,
