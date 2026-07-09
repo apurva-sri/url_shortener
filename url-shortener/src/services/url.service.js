@@ -1,4 +1,5 @@
 const prisma = require("../config/db");
+const env = require("../config/env");
 const generateShortCode = require("../utils/generateShortCode");
 const {
   RESERVED_ALIASES,
@@ -340,7 +341,7 @@ const getQRCode = async (id, userId) => {
     };
   }
 
-  const shortUrl = `${process.env.BASE_URL}/${url.shortCode}`;
+  const shortUrl = `${env.BASE_URL}/${url.shortCode}`;
 
   const qrCode = await qrService.generateQRCode(shortUrl);
 

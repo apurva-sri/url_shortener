@@ -1,8 +1,9 @@
 const app = require("./app");
 const { connectRedis, redisClient } = require("./config/redis");
 const prisma = require("./config/db");
+const env = require("./config/env");
 
-const PORT = process.env.PORT || 5000;
+const PORT = env.PORT;
 
 let server;
 

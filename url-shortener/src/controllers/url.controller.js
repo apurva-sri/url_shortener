@@ -4,6 +4,7 @@ const catchAsync = require("../utils/catchAsync");
 const ApiError = require("../utils/ApiError");
 const { successResponse } = require("../utils/apiResponse");
 const isExpired = require("../utils/isExpired");
+const env = require("../config/env");
 
 const createShortUrl = catchAsync(async (req, res) => {
   const result = await urlService.createShortUrl({
@@ -18,7 +19,7 @@ const createShortUrl = catchAsync(async (req, res) => {
     message: "Short URL created successfully",
     data: {
       shortCode: result.shortCode,
-      shortUrl: `${process.env.BASE_URL}/${result.shortCode}`,
+      shortUrl: `${env.BASE_URL}/${result.shortCode}`,
       expiresAt: result.expiresAt,
     },
   });
