@@ -1,72 +1,67 @@
-import { useState } from "react";
 import { motion } from "framer-motion";
-
-import Container from "../../common/Container";
+import { useState } from "react";
+import "./Navbar.css";
 
 import logoDark from "../../../assets/logo/logo-dark.png";
 
-import "./Navbar.css";
-
-const navItems = ["Features", "Pricing", "FAQ"];
+const navItems = ["Features", "Analytics", "Pricing", "FAQ"];
 
 function Navbar() {
-  const [active, setActive] = useState("Features");
+  const [active, setActive] = useState("");
 
   return (
     <header className="navbar-wrapper">
-      <Container>
-        <motion.nav
-          className="navbar"
-          initial={{
-            opacity: 0,
-            y: -60,
-          }}
-          animate={{
-            opacity: 1,
-            y: 0,
-          }}
-          transition={{
-            duration: 0.7,
-          }}
-        >
-          {/* Logo */}
+      <motion.nav
+        className="navbar"
+        initial={{
+          y: -70,
+          opacity: 0,
+        }}
+        animate={{
+          y: 0,
+          opacity: 1,
+        }}
+        transition={{
+          duration: 0.6,
+        }}
+      >
+        {/* Logo */}
 
-          <a href="/" className="logo">
-            <img src={logoDark} alt="LinkPilot" className="logo-image" />
-          </a>
+        <a href="/" className="navbar-logo">
+          <img src={logoDark} alt="LinkPilot" />
+        </a>
 
-          {/* Navigation */}
+        {/* Center */}
 
-          <ul className="nav-links">
-            {navItems.map((item) => (
-              <li
-                key={item}
-                className="nav-item"
-                onMouseEnter={() => setActive(item)}
-              >
-                {active === item && (
-                  <motion.div
-                    layoutId="navbar-pill"
-                    className="nav-pill"
-                    transition={{
-                      type: "spring",
-                      stiffness: 420,
-                      damping: 32,
-                      mass: 0.8,
-                    }}
-                  />
-                )}
+        <ul className="navbar-links">
+          {navItems.map((item) => (
+            <li
+              key={item}
+              className="navbar-item"
+              onMouseEnter={() => setActive(item)}
+              onMouseLeave={() => setActive("")}
+            >
+              {active === item && (
+                <motion.div
+                  layoutId="navbar-pill"
+                  className="navbar-pill"
+                  transition={{
+                    type: "spring",
+                    stiffness: 360,
+                    damping: 28,
+                  }}
+                />
+              )}
 
-                <span className="nav-label">{item}</span>
-              </li>
-            ))}
-          </ul>
+              <span>{item}</span>
+            </li>
+          ))}
+        </ul>
 
-          {/* CTA */}
+        {/* Button */}
 
-          <button className="navbar-btn">Get Started</button>
-        </motion.nav>
-      </Container>
+        <button className="navbar-button">Get Started</button>
+      </motion.nav>
     </header>
   );
 }
