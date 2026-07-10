@@ -1,5 +1,7 @@
+import Landing from "./pages/Landing/Landing";
+
 function App() {
-  return <div>LinkPilot</div>;
+  return <Landing />;
 }
 
-export default App;
+export default App
