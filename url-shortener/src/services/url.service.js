@@ -10,6 +10,10 @@ const ApiError = require("../utils/ApiError");
 const bcrypt = require("bcrypt");
 const qrService = require("./qr.service");
 const { redisClient } = require("../config/redis");
+require("../utils/storage");
+const cloudinary = require("cloudinary").v2;
+const CLOUDINARY_QR_FOLDER = env.CLOUDINARY_QR_FOLDER || "linkPilot/qr_code";
+const redisKey = require("../utils/redisKey");
 
 const createShortUrl = async ({ originalUrl, alias, expiresAt, userId }) => {
   if (alias && !userId) {
@@ -124,7 +128,7 @@ const logClickAndIncrement = async (urlId, shortCode, ipAddress, userAgent) => {
     });
   });
 
-  await redisClient.del(`analytics:${urlId}`);
+  await redisClient.del(redisKey("analytics", urlId));
 };
 
 const getMyUrls = async (userId, page, limit, search, sortBy, order) => {
@@ -332,7 +336,7 @@ const getQRCode = async (id, userId) => {
     throw new ApiError(404, "URL not found");
   }
 
-  const cacheKey = `qr:${url.shortCode}`;
+  const cacheKey = redisKey("qr", url.shortCode);
 
   const cachedQRCode = await redisClient.get(cacheKey);
 
@@ -342,17 +346,24 @@ const getQRCode = async (id, userId) => {
     };
   }
 
-  const shortUrl = `${env.BASE_URL}/${url.shortCode}`;
+const shortUrl = `${env.BASE_URL}/${url.shortCode}`;
 
-  const qrCode = await qrService.generateQRCode(shortUrl);
+const qrDataUrl = await qrService.generateQRCode(shortUrl);
 
-  await redisClient.set(cacheKey, qrCode, {
-    EX: QR_CACHE_TTL, // 24 Hours
-  });
+const uploadResult = await cloudinary.uploader.upload(qrDataUrl, {
+  folder: CLOUDINARY_QR_FOLDER,
+  resource_type: "image",
+});
 
-  return {
-    qrCode,
-  };
+const qrCode = uploadResult.secure_url;
+
+await redisClient.set(cacheKey, qrCode, {
+  EX: QR_CACHE_TTL, // 24 Hours
+});
+
+return {
+  qrCode,
+};
 };
 
 const getPublicStats = async () => {

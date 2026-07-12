@@ -3,6 +3,7 @@ const { redisClient } = require("../config/redis");
 const { generateOTP } = require("../utils/otp");
 const { OTP_TTL_SECONDS, OTP_MAX_ATTEMPTS } = require("../config/constants");
 const ApiError = require("../utils/ApiError");
+const redisKey = require("../utils/redisKey");
 
 
 const storeOTP = async (email) => {
@@ -15,7 +16,7 @@ const storeOTP = async (email) => {
     attempts: 0,
   });
 
-  await redisClient.set(`otp:${email}`, payload, {
+  await redisClient.set(redisKey("otp", email), payload, {
     EX: OTP_TTL_SECONDS,
   });
 
@@ -31,7 +32,7 @@ const verifyOTP = async (
 
   const data =
     await redisClient.get(
-      `otp:${email}`
+      redisKey("otp", email)
     );
 
   if (!data) {
@@ -54,7 +55,7 @@ const verifyOTP = async (
     payload.attempts++;
 
     if (payload.attempts >= OTP_MAX_ATTEMPTS) {
-      await redisClient.del(`otp:${email}`);
+      await redisClient.del(redisKey("otp", email));
 
       throw new ApiError(
         400,
@@ -62,10 +63,10 @@ const verifyOTP = async (
       );
     }
 
-    const ttl = await redisClient.ttl(`otp:${email}`);
+    const ttl = await redisClient.ttl(redisKey("otp", email));
 
     await redisClient.set(
-      `otp:${email}`,
+      redisKey("otp", email),
       JSON.stringify(payload),
       {
         EX: ttl,
@@ -79,14 +80,14 @@ const verifyOTP = async (
   }
 
   await redisClient.del(
-    `otp:${email}`
+    redisKey("otp", email)
   );
 
   return true;
 };
 
 const deleteOTP = async (email) => {
-  await redisClient.del(`otp:${email}`);
+  await redisClient.del(redisKey("otp", email));
 };
 
 const resendOTP = async (email) => {

@@ -4,9 +4,10 @@ const ApiError = require("../utils/ApiError");
 const {maskIp} = require("../utils/maskIp");
 const { redisClient } = require("../config/redis");
 const { ANALYTICS_CACHE_TTL } = require("../config/constants");
+const redisKey = require("../utils/redisKey");
 
 const getUrlAnalytics = async (urlId, userId) => {
-    const cacheKey = `analytics:${urlId}`;
+    const cacheKey = redisKey("analytics", urlId);
 
     const cachedAnalytics = await redisClient.get(cacheKey);
 

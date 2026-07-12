@@ -22,6 +22,12 @@ const env = cleanEnv(process.env, {
   SMTP_EMAIL: str(),
 
   SMTP_PASSWORD: str(),
+
+  CLOUDINARY_CLOUD_NAME: str(),
+  CLOUDINARY_API_KEY: str(),
+  CLOUDINARY_API_SECRET: str(),
+  CLOUDINARY_QR_FOLDER: str({ default: "linkPilot/qr_code" }),
+  CLOUDINARY_AVATAR_FOLDER: str({ default: "linkPilot/Profile_photo" }),
 });
 
 module.exports = env;

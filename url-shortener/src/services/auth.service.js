@@ -6,6 +6,10 @@ const otpService = require("./otp.service");
 const emailService = require("./email.service");
 const verifyEmailTemplate = require("../templates/verifyEmail.template");
 const logger = require("../utils/logger");
+const env = require("../config/env");
+require("../utils/storage");
+const cloudinary = require("cloudinary").v2;
+const CLOUDINARY_AVATAR_FOLDER = env.CLOUDINARY_AVATAR_FOLDER || "linkPilot/Profile_photo";
 
 const register = async ({ email, password }) => {
   const existingUser = await prisma.user.findUnique({
@@ -191,13 +195,22 @@ const updateProfile = async (userId, { name, username, phone, avatar }) => {
     }
   }
 
+  let avatarUrl = avatar;
+  if (avatar && avatar.startsWith("data:")) {
+    const uploadResult = await cloudinary.uploader.upload(avatar, {
+      folder: CLOUDINARY_AVATAR_FOLDER,
+      resource_type: "image",
+    });
+    avatarUrl = uploadResult.secure_url;
+  }
+
   const updatedUser = await prisma.user.update({
     where: { id: userId },
     data: {
       name,
       username,
       phone,
-      avatar,
+      avatar: avatarUrl,
     },
     select: {
       id: true,
