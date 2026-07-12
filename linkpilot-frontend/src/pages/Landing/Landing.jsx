@@ -411,7 +411,7 @@ export default function Landing() {
                 "24/7 dedicated support",
               ]}
               ctaText="Contact sales"
-              ctaLink="mailto:support@linkpilot.to"
+              ctaLink="mailto:notify.ap.sri@gmail.com"
               billingPeriod={billingPeriod}
             />
           </div>
@@ -482,7 +482,7 @@ export default function Landing() {
                 </p>
               </div>
               <a
-                href="mailto:notify@gmail.com"
+                href="mailto:notify.ap.sri@gmail.com"
                 className="shrink-0 rounded-full bg-ink px-6 py-3 text-sm font-bold text-paper transition hover:bg-accent"
               >
                 Get in touch
@@ -602,7 +602,7 @@ export default function Landing() {
                 </li>
                 <li>
                   <a
-                    href="mailto:support@linkpilot.to"
+                    href="mailto:notify.ap.sri@gmail.com"
                     className="hover:text-accent"
                   >
                     Contact Support
@@ -729,44 +729,53 @@ function PricingCard({
 function AnimatedCounter({ target, duration = 1500, suffix = "" }) {
   const [count, setCount] = useState(0);
   const elementRef = useRef(null);
-  const hasAnimated = useRef(false);
+  const [isIntersected, setIsIntersected] = useState(false);
 
+  // Intersection tracking
   useEffect(() => {
     const observer = new IntersectionObserver(
-      (entries) => {
-        const [entry] = entries;
-        if (entry.isIntersecting && !hasAnimated.current) {
-          hasAnimated.current = true;
-          let startTimestamp = null;
-          const step = (timestamp) => {
-            if (!startTimestamp) startTimestamp = timestamp;
-            const progress = Math.min(
-              (timestamp - startTimestamp) / duration,
-              1,
-            );
-            // Ease out quad
-            const easeProgress = progress * (2 - progress);
-            setCount(Math.floor(easeProgress * target));
-            if (progress < 1) {
-              window.requestAnimationFrame(step);
-            }
-          };
-          window.requestAnimationFrame(step);
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsIntersected(true);
+          observer.disconnect(); // Only animate once when it enters viewport
         }
       },
-      { threshold: 0.1 },
+      { threshold: 0.1 }
     );
 
     if (elementRef.current) {
       observer.observe(elementRef.current);
     }
 
-    return () => {
-      if (elementRef.current) {
-        observer.unobserve(elementRef.current);
+    return () => observer.disconnect();
+  }, []); // Run once on mount
+
+  // Count animation
+  useEffect(() => {
+    if (!isIntersected || target === 0) return;
+
+    let startTimestamp = null;
+    let animationFrameId = null;
+
+    const step = (timestamp) => {
+      if (!startTimestamp) startTimestamp = timestamp;
+      const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+      const easeProgress = progress * (2 - progress);
+      setCount(Math.floor(easeProgress * target));
+
+      if (progress < 1) {
+        animationFrameId = window.requestAnimationFrame(step);
       }
     };
-  }, [target, duration]);
+
+    animationFrameId = window.requestAnimationFrame(step);
+
+    return () => {
+      if (animationFrameId) {
+        window.cancelAnimationFrame(animationFrameId);
+      }
+    };
+  }, [isIntersected, target, duration]);
 
   return (
     <span ref={elementRef}>
