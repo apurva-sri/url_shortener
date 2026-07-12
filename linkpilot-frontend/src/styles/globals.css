@@ -13,10 +13,11 @@ html,
 body {
   padding: 0;
   margin: 0;
-  background: var(--lp-white);
-  color: var(--lp-black);
+  background: var(--color-paper, #ffffff);
+  color: var(--color-ink, #0f0f0f);
   font-family: "Inter", sans-serif;
   scroll-behavior: smooth;
+  transition: background 0.3s ease, color 0.3s ease;
 }
 
 h1,
@@ -55,3 +56,63 @@ h4,
     scrollbar-width: none;
   }
 }
+
+/* ─── Dark Mode overrides ──────────────────────────────────────────── */
+/* Applied when <html class="dark"> is set by the navbar toggle.        */
+/* These override Tailwind's hardcoded colours (bg-white, etc.)         */
+
+html.dark {
+  color-scheme: dark;
+}
+
+html.dark body {
+  background-color: #0d0d0d;
+  color: #e5e7eb;
+}
+
+/* Backgrounds */
+html.dark .bg-white  { background-color: #141414 !important; }
+html.dark .bg-paper  { background-color: #0d0d0d !important; }
+html.dark .bg-mist   { background-color: #1c1c1c !important; }
+html.dark .bg-mist\/30  { background-color: rgba(28,28,28,0.30) !important; }
+html.dark .bg-mist\/40  { background-color: rgba(28,28,28,0.40) !important; }
+html.dark .bg-mist\/20  { background-color: rgba(28,28,28,0.20) !important; }
+
+/* Borders */
+html.dark .border-line    { border-color: #2a2a2a !important; }
+html.dark .divide-line > * + * { border-color: #2a2a2a !important; }
+
+/* Text */
+html.dark .text-ink   { color: #f0f0f0 !important; }
+html.dark .text-slate  { color: #9ca3af !important; }
+
+/* Navbar pill hover */
+html.dark .bg-paper\/95  { background-color: rgba(13,13,13,0.95) !important; }
+html.dark .bg-paper\/75  { background-color: rgba(13,13,13,0.75) !important; }
+html.dark .bg-paper\/60  { background-color: rgba(13,13,13,0.60) !important; }
+
+/* Accent-50 badges keep their colour — no override needed */
+
+/* Input / form fields */
+html.dark input,
+html.dark textarea {
+  background-color: #1c1c1c !important;
+  border-color: #2a2a2a !important;
+  color: #f0f0f0 !important;
+}
+html.dark input::placeholder,
+html.dark textarea::placeholder {
+  color: #6b7280 !important;
+}
+
+/* Buttons */
+html.dark .bg-ink { background-color: #f0f0f0 !important; color: #0f0f0f !important; }
+html.dark .hover\:bg-ink2:hover { background-color: #d1d5db !important; }
+html.dark .text-paper { color: #0f0f0f !important; }
+
+*, *::before, *::after {
+  transition-property: background-color, border-color, color;
+  transition-duration: 200ms;
+  transition-timing-function: ease;
+}
+

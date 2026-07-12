@@ -13,4 +13,26 @@
 
   --lp-nav-height: 76px;
   --lp-ease-pilot: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* Semantic design tokens */
+  --color-paper: #f9f9f9;
+  --color-ink: #0f0f0f;
+  --color-ink2: #1a1a1a;
+  --color-slate: #6b7280;
+  --color-mist: #f0f0f0;
+  --color-line: #e5e7eb;
 }
+
+/* Dark mode overrides — applied via <html class="dark"> */
+.dark {
+  --color-paper: #0d0d0d;
+  --color-ink: #f0f0f0;
+  --color-ink2: #d1d5db;
+  --color-slate: #9ca3af;
+  --color-mist: #1a1a1a;
+  --color-line: #2a2a2a;
+  --lp-white: #0d0d0d;
+  --lp-near-black: #f0f0f0;
+  --lp-gray-lighter: #1a1a1a;
+}
+

@@ -5,15 +5,15 @@ export default {
   theme: {
     extend: {
       colors: {
-        ink: "#000000",        // primary black (text, buttons)
-        ink2: "#111111",       // near-black (surfaces, footer)
-        slate: "#6B7280",      // muted gray text
-        line: "#E5E5E5",       // borders / dividers
-        mist: "#F5F5F5",       // section backgrounds
-        paper: "#FFFFFF",      // base background
+        ink:    "var(--color-ink, #0f0f0f)",
+        ink2:   "var(--color-ink2, #1a1a1a)",
+        slate:  "var(--color-slate, #6b7280)",
+        line:   "var(--color-line, #e5e7eb)",
+        mist:   "var(--color-mist, #f0f0f0)",
+        paper:  "var(--color-paper, #f9f9f9)",
         accent: {
-          DEFAULT: "#6366F1",  // LinkPilot violet-blue
-          50: "#EEF0FE",
+          DEFAULT: "#6366F1",
+          50:  "#EEF0FE",
           100: "#E0E3FD",
           400: "#818CF7",
           500: "#6366F1",

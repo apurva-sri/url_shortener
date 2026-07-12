@@ -26,9 +26,9 @@ export default function Landing() {
   const [billingPeriod, setBillingPeriod] = useState("monthly"); // monthly or annual
   const [activeFaq, setActiveFaq] = useState(null);
   const [statsData, setStatsData] = useState([
-    { value: 10547000, label: "Links Shortened" },
-    { value: 542900, label: "Total Redirects" },
-    { value: 15400, label: "Active Creators" },
+    { value: 0, label: "Links Shortened" },
+    { value: 0, label: "Total Redirects" },
+    { value: 0, label: "Active Creators" },
   ]);
 
   useEffect(() => {
@@ -37,14 +37,14 @@ export default function Landing() {
         if (res.success && res.data) {
           const { totalUrls = 0, totalClicks = 0, totalUsers = 0 } = res.data;
           setStatsData([
-            { value: 10547000 + totalUrls, label: "Links Shortened" },
-            { value: 542900 + totalClicks, label: "Total Redirects" },
-            { value: 15400 + totalUsers, label: "Active Creators" },
+            { value: totalUrls, label: "Links Shortened" },
+            { value: totalClicks, label: "Total Redirects" },
+            { value: totalUsers, label: "Active Creators" },
           ]);
         }
       })
       .catch((err) => {
-        console.error("Failed to fetch public stats, using base values:", err);
+        console.error("Failed to fetch public stats:", err);
       });
   }, []);
 
@@ -356,6 +356,66 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* About Section */}
+      <section id="about" className="py-20 px-6 bg-paper scroll-mt-24">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center max-w-2xl mx-auto mb-14">
+            <span className="text-xs font-bold uppercase tracking-wider text-accent bg-accent-50 px-3 py-1 rounded-full">
+              About LinkPilot
+            </span>
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-ink mt-4 tracking-tight">
+              Built by developers, for everyone.
+            </h2>
+            <p className="text-slate text-sm sm:text-base mt-3 leading-relaxed">
+              LinkPilot started as a side project to solve a simple frustration ugly, untrackable links
+              cluttering marketing campaigns. Today it&apos;s a full-stack link intelligence platform.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="rounded-2xl border border-line bg-white p-6 space-y-3">
+              <h3 className="font-display font-bold text-ink text-sm">Our Mission</h3>
+              <p className="text-xs text-slate leading-relaxed">
+                Make link management effortless for creators, marketers, and developers with
+                deep analytics, branded QR codes, and enterprise-grade security baked in from day one.
+              </p>
+            </div>
+            <div className="rounded-2xl border border-line bg-white p-6 space-y-3">
+              <h3 className="font-display font-bold text-ink text-sm">How We Built It</h3>
+              <p className="text-xs text-slate leading-relaxed">
+                LinkPilot is built on a modern stack: React, Node.js, PostgreSQL, Redis, and Cloudinary.
+                Every feature ships with observability, rate-limiting, and security best practices
+                baked in from the ground up.
+              </p>
+            </div>
+            <div className="rounded-2xl border border-line bg-white p-6 space-y-3">
+              <h3 className="font-display font-bold text-ink text-sm">What&apos;s Next</h3>
+              <p className="text-xs text-slate leading-relaxed">
+                We&apos;re actively building team workspaces, Zapier integrations, bulk link imports,
+                and a public API. If you&apos;re a developer, the API is already live build something
+                cool on top of it.
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-10 rounded-2xl border border-line bg-mist/40 p-8 flex flex-col sm:flex-row items-center justify-between gap-6">
+            <div>
+              <h3 className="font-display font-bold text-ink text-base">Open to feedback &amp; contributions</h3>
+              <p className="text-xs text-slate mt-1 max-w-sm">
+                LinkPilot is a passion project. If you find a bug, have a feature idea, or just want
+                to say hi reach out. Every piece of feedback shapes the roadmap.
+              </p>
+            </div>
+            <a
+              href="mailto:support@linkpilot.to"
+              className="shrink-0 rounded-full bg-ink px-6 py-3 text-sm font-bold text-paper transition hover:bg-accent"
+            >
+              Get in touch
+            </a>
+          </div>
+        </div>
+      </section>
+
       {/* FAQ Section */}
       <section className="py-20 px-6 bg-white border-t border-b border-line">
         <div className="max-w-3xl mx-auto">
@@ -405,35 +465,29 @@ export default function Landing() {
           <div>
             <h4 className="font-bold text-ink mb-3">Product</h4>
             <ul className="space-y-2 text-xs">
-              <li><a href="#features" className="hover:text-accent">Features</a></li>
-              <li><a href="#pricing" className="hover:text-accent">Pricing</a></li>
+              <li><a href="#features" onClick={(e) => { e.preventDefault(); document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' }); }} className="hover:text-accent cursor-pointer">Features</a></li>
+              <li><a href="#pricing" onClick={(e) => { e.preventDefault(); document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' }); }} className="hover:text-accent cursor-pointer">Pricing</a></li>
               <li><Link to="/register" className="hover:text-accent">Get Started</Link></li>
-            </ul>
-          </div>
-          <div>
-            <h4 className="font-bold text-ink mb-3">Resources</h4>
-            <ul className="space-y-2 text-xs">
-              <li><a href="#" className="hover:text-accent">Blog</a></li>
-              <li><a href="#" className="hover:text-accent">Documentation</a></li>
-              <li><a href="#" className="hover:text-accent">Redirection API</a></li>
             </ul>
           </div>
           <div>
             <h4 className="font-bold text-ink mb-3">Company</h4>
             <ul className="space-y-2 text-xs">
-              <li><a href="#" className="hover:text-accent">About Us</a></li>
-              <li><a href="#" className="hover:text-accent">Careers</a></li>
-              <li><a href="#" className="hover:text-accent">Contact Support</a></li>
+              <li><a href="#about" onClick={(e) => { e.preventDefault(); document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' }); }} className="hover:text-accent cursor-pointer">About Us</a></li>
+              <li><a href="mailto:support@linkpilot.to" className="hover:text-accent">Contact Support</a></li>
+            </ul>
+          </div>
+          <div>
+            <h4 className="font-bold text-ink mb-3">Legal</h4>
+            <ul className="space-y-2 text-xs">
+              <li><a href="#" className="hover:text-accent">Privacy Policy</a></li>
+              <li><a href="#" className="hover:text-accent">Terms of Service</a></li>
             </ul>
           </div>
         </div>
 
         <div className="pt-8 flex flex-col sm:flex-row sm:items-center sm:justify-between text-xs gap-4">
           <p>© {new Date().getFullYear()} LinkPilot. All rights reserved.</p>
-          <div className="flex gap-4">
-            <a href="#" className="hover:text-accent">Privacy Policy</a>
-            <a href="#" className="hover:text-accent">Terms of Service</a>
-          </div>
         </div>
       </footer>
       </div>
@@ -514,6 +568,7 @@ function AnimatedCounter({ target, duration = 1500, suffix = "" }) {
   const hasAnimated = useRef(false);
 
   useEffect(() => {
+    hasAnimated.current = false; // Reset animation state on target change
     const observer = new IntersectionObserver(
       (entries) => {
         const [entry] = entries;

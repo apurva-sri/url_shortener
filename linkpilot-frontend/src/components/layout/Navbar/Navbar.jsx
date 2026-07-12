@@ -1,30 +1,55 @@
 import { useState, useEffect } from "react";
-import { NavLink, Link } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Sun, Moon } from "lucide-react";
 import { useAuth } from "../../../store/AuthContext.jsx";
 
 const NAV_LINKS = [
-  { label: "Features", to: "/#features" },
-  { label: "Analytics", to: "/#analytics" },
-  { label: "Pricing", to: "/#pricing" },
-  { label: "Docs", to: "/#docs" },
+  { label: "Features", hash: "features" },
+  { label: "Analytics", hash: "analytics" },
+  { label: "Pricing", hash: "pricing" },
+  { label: "About", hash: "about" },
 ];
 
 export default function Navbar() {
   const { isAuthenticated } = useAuth();
   const [hovered, setHovered] = useState(null);
-  const [dark, setDark] = useState(false);
+  const [dark, setDark] = useState(() => {
+    // Persist preference across reloads
+    return localStorage.getItem("lp-theme") === "dark";
+  });
   const [scrolled, setScrolled] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
 
-  // Monitor scrolling to transition the width and style of the floating pill
+  // Apply / remove dark class on <html>
   useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 30);
-    };
+    const html = document.documentElement;
+    if (dark) {
+      html.classList.add("dark");
+      localStorage.setItem("lp-theme", "dark");
+    } else {
+      html.classList.remove("dark");
+      localStorage.setItem("lp-theme", "light");
+    }
+  }, [dark]);
+
+  // Monitor scrolling for the floating pill effect
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 30);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  const handleNavClick = (hash) => {
+    if (location.pathname !== "/") {
+      // Navigate to landing page then scroll
+      navigate(`/#${hash}`);
+    } else {
+      const el = document.getElementById(hash);
+      if (el) el.scrollIntoView({ behavior: "smooth" });
+    }
+  };
 
   return (
     <header className={`sticky top-0 z-50 w-full bg-transparent transition-all duration-300 ${scrolled ? "py-1.5" : "py-4"}`}>
@@ -49,11 +74,11 @@ export default function Navbar() {
           onMouseLeave={() => setHovered(null)}
         >
           {NAV_LINKS.map((link) => (
-            <NavLink
+            <button
               key={link.label}
-              to={link.to}
+              onClick={() => handleNavClick(link.hash)}
               onMouseEnter={() => setHovered(link.label)}
-              className="relative z-10 rounded-pill px-4 py-2 text-sm font-medium text-slate transition-colors duration-200 hover:text-white"
+              className="relative z-10 rounded-pill px-4 py-2 text-sm font-medium text-slate transition-colors duration-200 hover:text-white cursor-pointer"
             >
               {hovered === link.label && (
                 <motion.span
@@ -63,7 +88,7 @@ export default function Navbar() {
                 />
               )}
               <span className="relative">{link.label}</span>
-            </NavLink>
+            </button>
           ))}
         </nav>
 
@@ -72,15 +97,16 @@ export default function Navbar() {
           <button
             aria-label="Toggle theme"
             onClick={() => setDark((d) => !d)}
-            className="grid h-9 w-9 place-items-center rounded-full border border-line text-ink transition hover:bg-mist"
+            className="grid h-9 w-9 place-items-center rounded-full border border-line bg-paper text-ink transition hover:bg-mist"
+            title={dark ? "Switch to light mode" : "Switch to dark mode"}
           >
-            {dark ? <Moon size={16} /> : <Sun size={16} />}
+            {dark ? <Sun size={16} /> : <Moon size={16} />}
           </button>
 
           {isAuthenticated ? (
             <Link
               to="/dashboard"
-              className="rounded-pill bg-ink px-5 py-2 text-sm font-medium text-white transition hover:bg-ink2"
+              className="rounded-pill bg-ink px-5 py-2 text-sm font-medium text-paper transition hover:bg-ink2"
             >
               Dashboard
             </Link>
@@ -95,7 +121,7 @@ export default function Navbar() {
 
               <Link
                 to="/register"
-                className="rounded-pill bg-ink px-5 py-2 text-sm font-medium text-white transition hover:bg-accent"
+                className="rounded-pill bg-ink px-5 py-2 text-sm font-medium text-paper transition hover:bg-accent"
               >
                 Get Started
               </Link>

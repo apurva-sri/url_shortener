@@ -68,13 +68,8 @@ export default function Hero() {
           ) : (
             <>
               <Link to="/register">
-                <button className="rounded-full bg-ink hover:bg-ink2 px-8 py-3.5 text-sm font-bold text-white transition shadow-sm flex items-center gap-2">
-                  Get Started <ArrowRight size={16} />
-                </button>
-              </Link>
-              <Link to="/login">
-                <button className="rounded-full border border-line bg-white hover:bg-mist px-8 py-3.5 text-sm font-bold text-ink transition shadow-sm">
-                  Sign In to Workspace
+                <button className="rounded-full bg-ink hover:bg-ink2 px-8 py-3.5 text-sm font-bold text-paper transition shadow-sm flex items-center gap-2">
+                  Get Started for free <ArrowRight size={16} />
                 </button>
               </Link>
             </>

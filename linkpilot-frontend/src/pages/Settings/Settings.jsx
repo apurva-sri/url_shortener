@@ -5,7 +5,6 @@ import {
   Lock,
   CreditCard,
   Camera,
-  Download,
   CheckCircle2,
   AlertCircle,
   Loader2,
@@ -13,11 +12,6 @@ import {
 import Button from "../../components/common/Button/Button.jsx";
 import { updateProfile, changePassword } from "../../api/auth.api.js";
 
-const INVOICES = [
-  { id: "INV-2026-003", date: "Jul 01, 2026", amount: "$15.00", status: "Paid" },
-  { id: "INV-2026-002", date: "Jun 01, 2026", amount: "$15.00", status: "Paid" },
-  { id: "INV-2026-001", date: "May 01, 2026", amount: "$15.00", status: "Paid" },
-];
 
 export default function Settings() {
   const { user, setSession } = useAuth();
@@ -41,7 +35,6 @@ export default function Settings() {
   const handleAvatarChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      // Validate file size (limit to 1MB to prevent localStorage overflow)
       if (file.size > 1024 * 1024) {
         setMessage({ type: "error", text: "Image must be less than 1MB" });
         setTimeout(() => setMessage(null), 3000);
@@ -116,7 +109,6 @@ export default function Settings() {
   };
 
   const handleDownloadInvoice = (invoiceId) => {
-    // Simulate downloading invoice PDF
     alert(`Downloading invoice ${invoiceId} in PDF format...`);
   };
 
@@ -332,124 +324,38 @@ export default function Settings() {
           {/* BILLING PANEL */}
           {activeTab === "billing" && (
             <div className="space-y-8">
-              {/* Plan Card Grid */}
-              <div className="space-y-6">
-                <div>
-                  <h2 className="font-display text-lg font-bold text-ink border-b border-line pb-2.5">Plan & Subscriptions</h2>
-                  <p className="text-slate text-xs mt-1">Review subscription plan properties and usage thresholds.</p>
+              <div>
+                <h2 className="font-display text-lg font-bold text-ink border-b border-line pb-2.5">Plan &amp; Subscriptions</h2>
+                <p className="text-slate text-xs mt-1">Review your current plan and usage.</p>
+              </div>
+
+              {/* Free Plan Card */}
+              <div className="rounded-2xl border border-line bg-mist/30 p-6 flex flex-col gap-4">
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate bg-mist border border-line px-2 py-0.5 rounded-full">
+                    FREE PLAN
+                  </span>
                 </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {/* Current Plan Overview */}
-                  <div className="md:col-span-2 rounded-2xl border border-line bg-mist/30 p-6 flex flex-col justify-between space-y-4">
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2">
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-accent bg-accent-50 border border-accent-100 px-2 py-0.5 rounded-full">
-                          ACTIVE PLAN
-                        </span>
-                      </div>
-                      <h3 className="font-display text-xl font-bold text-ink">LinkPilot Pro Plan</h3>
-                      <p className="text-xs text-slate max-w-md">
-                        Your workspace is registered on Pro billing. Enjoy custom branded domain links, password security layers, custom QR dots, and infinite visitor analytical charts.
-                      </p>
-                    </div>
-
-                    <div className="flex flex-wrap items-center gap-4 text-xs font-semibold text-ink pt-2">
-                      <div>
-                        <span className="text-slate font-medium block">Billing Cycle:</span>
-                        <span>$15.00 / mo (Billed Annually)</span>
-                      </div>
-                      <div className="border-l border-line h-6 hidden sm:block" />
-                      <div>
-                        <span className="text-slate font-medium block">Renewal Date:</span>
-                        <span>May 01, 2027</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Usage Progress Card */}
-                  <div className="rounded-2xl border border-line bg-white p-6 space-y-4">
-                    <h4 className="font-display text-sm font-bold text-ink">Usage Limits</h4>
-                    <div className="space-y-3">
-                      {/* Meter 1: Links */}
-                      <div className="space-y-1">
-                        <div className="flex justify-between text-[11px] font-semibold">
-                          <span className="text-slate">Campaign Links</span>
-                          <span className="text-ink">12 / ∞</span>
-                        </div>
-                        <div className="h-2 w-full bg-mist rounded-full overflow-hidden">
-                          <div className="h-full bg-accent rounded-full w-[12%]" />
-                        </div>
-                      </div>
-
-                      {/* Meter 2: QR Codes */}
-                      <div className="space-y-1">
-                        <div className="flex justify-between text-[11px] font-semibold">
-                          <span className="text-slate">QR Vector Assets</span>
-                          <span className="text-ink">5 / ∞</span>
-                        </div>
-                        <div className="h-2 w-full bg-mist rounded-full overflow-hidden">
-                          <div className="h-full bg-accent rounded-full w-[8%]" />
-                        </div>
-                      </div>
-
-                      {/* Meter 3: Custom Domains */}
-                      <div className="space-y-1">
-                        <div className="flex justify-between text-[11px] font-semibold">
-                          <span className="text-slate">Branded Domains</span>
-                          <span className="text-ink">1 / 3</span>
-                        </div>
-                        <div className="h-2 w-full bg-mist rounded-full overflow-hidden">
-                          <div className="h-full bg-accent rounded-full w-[33%]" />
-                        </div>
-                      </div>
-                    </div>
+                <h3 className="font-display text-xl font-bold text-ink">LinkPilot Free</h3>
+                <p className="text-xs text-slate max-w-md">
+                  You are on the free plan. All core features — link shortening, QR codes, and click analytics — are fully available.
+                </p>
+                <div className="flex flex-wrap items-center gap-4 text-xs font-semibold text-ink pt-2">
+                  <div>
+                    <span className="text-slate font-medium block">Billing Cycle:</span>
+                    <span>No active subscription</span>
                   </div>
                 </div>
               </div>
 
-              {/* Invoices List Table */}
+              {/* Invoice History */}
               <div className="space-y-4">
                 <div>
                   <h3 className="font-display text-base font-bold text-ink">Billing Invoice History</h3>
-                  <p className="text-slate text-xs mt-1">Review or download PDF invoices for past workspace payments.</p>
+                  <p className="text-slate text-xs mt-1">No invoices yet — you haven't made any payments.</p>
                 </div>
-
-                <div className="overflow-x-auto rounded-xl border border-line">
-                  <table className="w-full border-collapse text-left text-sm text-slate">
-                    <thead className="bg-mist text-ink font-semibold border-b border-line text-xs uppercase tracking-wider">
-                      <tr>
-                        <th className="px-6 py-3.5">Invoice ID</th>
-                        <th className="px-6 py-3.5">Date</th>
-                        <th className="px-6 py-3.5">Amount</th>
-                        <th className="px-6 py-3.5">Status</th>
-                        <th className="px-6 py-3.5 text-right">Download</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-line text-xs font-medium text-ink">
-                      {INVOICES.map((inv) => (
-                        <tr key={inv.id} className="hover:bg-mist/30 transition">
-                          <td className="px-6 py-4 font-mono font-bold text-accent">{inv.id}</td>
-                          <td className="px-6 py-4 text-slate">{inv.date}</td>
-                          <td className="px-6 py-4 font-semibold">{inv.amount}</td>
-                          <td className="px-6 py-4">
-                            <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100 uppercase">
-                              {inv.status}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 text-right">
-                            <button
-                              onClick={() => handleDownloadInvoice(inv.id)}
-                              className="inline-flex items-center gap-1.5 font-semibold text-accent hover:underline"
-                            >
-                              <Download size={12} />
-                              PDF
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                <div className="rounded-xl border border-line bg-mist/20 px-6 py-10 text-center">
+                  <p className="text-sm text-slate font-medium">No billing history available.</p>
                 </div>
               </div>
             </div>
