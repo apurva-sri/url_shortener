@@ -355,6 +355,23 @@ const getQRCode = async (id, userId) => {
   };
 };
 
+const getPublicStats = async () => {
+  const totalUrls = await prisma.url.count();
+  const totalUsers = await prisma.user.count();
+  const clickAgg = await prisma.url.aggregate({
+    _sum: {
+      clicks: true,
+    },
+  });
+  const totalClicks = clickAgg._sum.clicks || 0;
+
+  return {
+    totalUrls,
+    totalUsers,
+    totalClicks,
+  };
+};
+
 module.exports = {
   createShortUrl,
   getUrlByShortCode,
@@ -369,4 +386,5 @@ module.exports = {
   removePasswordProtection,
   verifyUrlPassword,
   getQRCode,
+  getPublicStats,
 };

@@ -35,3 +35,7 @@ export const verifyUrlPassword = (payload) =>
 // GET /api/url/:id/qr
 export const getQRCode = (id) =>
   api.get(`/url/${id}/qr`).then((res) => res.data);
+
+// GET /api/url/public/stats
+export const getPublicStats = () =>
+  api.get("/url/public/stats").then((res) => res.data);

@@ -2,12 +2,6 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 
 const COLORS = ["#6366F1", "#10B981", "#3B82F6", "#F59E0B", "#EF4444", "#6B7280"];
 
-/**
- * Accepts either:
- *  - a map:   { desktop: 38, mobile: 55, tablet: 7 }
- *  - a list:  [{ name: "Chrome", count: 62 }, ...]
- * since analytics.service.js's exact return shape isn't confirmed yet.
- */
 function normalize(raw) {
   if (!raw) return [];
   if (Array.isArray(raw)) {

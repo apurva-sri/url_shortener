@@ -202,6 +202,15 @@ const getQRCode = catchAsync(async (req, res) => {
   });
 });
 
+const getPublicStats = catchAsync(async (req, res) => {
+  const stats = await urlService.getPublicStats();
+  return successResponse(res, {
+    statusCode: 200,
+    message: "Public statistics fetched successfully",
+    data: stats,
+  });
+});
+
 module.exports = {
   createShortUrl,
   redirectUrl,
@@ -213,4 +222,5 @@ module.exports = {
   removePasswordProtection,
   verifyUrlPassword,
   getQRCode,
+  getPublicStats,
 };

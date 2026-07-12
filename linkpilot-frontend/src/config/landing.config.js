@@ -1,10 +1,3 @@
-/**
- * LinkPilot Landing Page Configuration
- * 
- * You can modify these values to dynamically update the stats, metrics,
- * and text displayed on the public marketing landing page.
- */
-
 export const LANDING_STATS = [
   { value: "10,547,000+", label: "Links Shortened" },
   { value: "542,900+", label: "Total Redirects" },

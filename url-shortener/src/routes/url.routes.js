@@ -21,6 +21,7 @@ router.post(
   validate(verifyPasswordSchema),
   urlController.verifyUrlPassword,
 );
+router.get("/public/stats", urlController.getPublicStats);
 router.get("/:shortCode/stats", urlController.getUrlStats);
 router.patch("/:id", protect, urlController.updateUrl);
 router.delete("/:id", protect, urlController.deleteUrl);

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import {
   Link2,
@@ -13,30 +13,53 @@ import {
   Zap,
   Code,
   CheckCircle,
+  Clock,
 } from "lucide-react";
 import Navbar from "../../components/layout/Navbar/Navbar.jsx";
 import Hero from "../../components/landing/Hero/Hero.jsx";
 import Marquee from "../../components/landing/Marquee/Marquee.jsx";
 import Button from "../../components/common/Button/Button.jsx";
-
-// Import landing configuration stats and FAQs
-import { LANDING_STATS, LANDING_FAQS } from "../../config/landing.config.js";
+import { LANDING_FAQS } from "../../config/landing.config.js";
+import { getPublicStats } from "../../api/url.api.js";
 
 export default function Landing() {
   const [billingPeriod, setBillingPeriod] = useState("monthly"); // monthly or annual
   const [activeFaq, setActiveFaq] = useState(null);
+  const [statsData, setStatsData] = useState([
+    { value: 10547000, label: "Links Shortened" },
+    { value: 542900, label: "Total Redirects" },
+    { value: 15400, label: "Active Creators" },
+  ]);
+
+  useEffect(() => {
+    getPublicStats()
+      .then((res) => {
+        if (res.success && res.data) {
+          const { totalUrls = 0, totalClicks = 0, totalUsers = 0 } = res.data;
+          setStatsData([
+            { value: 10547000 + totalUrls, label: "Links Shortened" },
+            { value: 542900 + totalClicks, label: "Total Redirects" },
+            { value: 15400 + totalUsers, label: "Active Creators" },
+          ]);
+        }
+      })
+      .catch((err) => {
+        console.error("Failed to fetch public stats, using base values:", err);
+      });
+  }, []);
 
   const toggleFaq = (index) => {
     setActiveFaq(activeFaq === index ? null : index);
   };
 
   return (
-    <div className="bg-paper min-h-screen text-ink overflow-x-hidden font-display">
+    <div className="bg-paper min-h-screen text-ink font-display">
       <Navbar />
-      <Hero />
-      <Marquee />
+      <div className="overflow-x-hidden">
+        <Hero />
+        <Marquee />
 
-      {/* Features Grid Section - Styled exactly like the Realrun mockup */}
+      {/* Features Grid Section */}
       <section id="features" className="py-20 px-6 max-w-7xl mx-auto scroll-mt-24">
         <div className="text-center max-w-2xl mx-auto">
           <span className="text-xs font-bold uppercase tracking-wider text-accent bg-accent-50 px-3 py-1 rounded-full">
@@ -50,7 +73,7 @@ export default function Landing() {
           </p>
         </div>
 
-        {/* 6-Card Grid Layout matching mockup layout */}
+        {/* 6-Card Grid Layout*/}
         <div className="mt-14 grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Card 1: Custom Aliases */}
           <div className="rounded-2xl border border-line bg-white p-6 shadow-sm flex flex-col justify-between hover:shadow-md transition min-h-[220px]">
@@ -170,25 +193,30 @@ export default function Landing() {
             </div>
           </div>
 
-          {/* Card 5: Developer API Key */}
+          {/* Card 5: Smart Expiry Controls */}
           <div className="rounded-2xl border border-line bg-white p-6 shadow-sm flex flex-col justify-between hover:shadow-md transition min-h-[220px]">
             <div className="space-y-2">
               <div className="flex items-center gap-2">
                 <div className="grid h-8 w-8 place-items-center rounded-lg bg-accent-50 text-accent">
-                  <Code size={16} />
+                  <Clock size={16} />
                 </div>
-                <h3 className="font-display font-bold text-sm text-ink">Developer API Gate</h3>
+                <h3 className="font-display font-bold text-sm text-ink">Smart Expiry Controls</h3>
               </div>
               <p className="text-xs text-slate leading-relaxed max-w-md">
-                Deploy fast integrations. Create link assets and retrieve statistics programmatically via dynamic token keys.
+                Deactivate links automatically. Set custom expiration dates to run temporary campaigns, preventing users from landing on outdated content.
               </p>
             </div>
 
             {/* Visual Mockup */}
-            <div className="mt-4 rounded-xl border border-line bg-ink p-3.5 font-mono text-[10px] text-zinc-300 select-none">
-              <div className="text-zinc-500 font-semibold">// POST /api/url</div>
-              <div><span className="text-emerald-400">"alias"</span>: <span className="text-amber-300">"lp-dev"</span>,</div>
-              <div><span className="text-emerald-400">"destination"</span>: <span className="text-amber-300">"linkpilot.to"</span></div>
+            <div className="mt-4 rounded-xl border border-line bg-mist/40 p-4 space-y-2 select-none text-[10px]">
+              <div className="flex items-center justify-between font-bold text-slate">
+                <span>CAMPAIGN STATUS</span>
+                <span className="text-amber-600 bg-amber-50 border border-amber-100 px-2 py-0.5 rounded font-semibold animate-pulse">Expires Soon</span>
+              </div>
+              <div className="flex items-center justify-between text-xs font-semibold text-ink">
+                <span>flash-sale-2026</span>
+                <span className="text-slate font-mono font-medium">18 hours left</span>
+              </div>
             </div>
           </div>
 
@@ -229,10 +257,10 @@ export default function Landing() {
           </h2>
           
           <div className="grid grid-cols-1 gap-8 sm:grid-cols-3 text-center">
-            {LANDING_STATS.map((stat, i) => (
+            {statsData.map((stat, i) => (
               <div key={i} className="space-y-2">
                 <p className="text-4xl sm:text-5xl font-black text-ink tracking-tight">
-                  {stat.value}
+                  <AnimatedCounter target={stat.value} suffix="+" />
                 </p>
                 <p className="text-xs text-slate font-bold uppercase tracking-wider">
                   {stat.label}
@@ -408,6 +436,7 @@ export default function Landing() {
           </div>
         </div>
       </footer>
+      </div>
     </div>
   );
 }
@@ -427,8 +456,10 @@ function FeatureCard({ icon: Icon, title, description }) {
 function PricingCard({ title, price, description, features, ctaText, ctaLink, popular = false, billingPeriod }) {
   return (
     <div
-      className={`rounded-2xl border p-8 shadow-sm flex flex-col relative ${
-        popular ? "border-accent bg-white ring-1 ring-accent" : "border-line bg-white"
+      className={`rounded-2xl border p-8 shadow-sm flex flex-col relative transition-all duration-300 ease-pilot hover:-translate-y-2 hover:shadow-xl ${
+        popular
+          ? "border-accent bg-white ring-1 ring-accent hover:ring-2 hover:shadow-accent/15"
+          : "border-line bg-white hover:border-accent/60"
       }`}
     >
       {popular && (
@@ -474,5 +505,51 @@ function PricingCard({ title, price, description, features, ctaText, ctaLink, po
         )}
       </div>
     </div>
+  );
+}
+
+function AnimatedCounter({ target, duration = 1500, suffix = "" }) {
+  const [count, setCount] = useState(0);
+  const elementRef = useRef(null);
+  const hasAnimated = useRef(false);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const [entry] = entries;
+        if (entry.isIntersecting && !hasAnimated.current) {
+          hasAnimated.current = true;
+          let startTimestamp = null;
+          const step = (timestamp) => {
+            if (!startTimestamp) startTimestamp = timestamp;
+            const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+            // Ease out quad
+            const easeProgress = progress * (2 - progress);
+            setCount(Math.floor(easeProgress * target));
+            if (progress < 1) {
+              window.requestAnimationFrame(step);
+            }
+          };
+          window.requestAnimationFrame(step);
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (elementRef.current) {
+      observer.observe(elementRef.current);
+    }
+
+    return () => {
+      if (elementRef.current) {
+        observer.unobserve(elementRef.current);
+      }
+    };
+  }, [target, duration]);
+
+  return (
+    <span ref={elementRef}>
+      {count.toLocaleString()}{suffix}
+    </span>
   );
 }
