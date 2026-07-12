@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Search, Bell, ChevronDown, LogOut } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Search, Bell, ChevronDown, LogOut, Settings } from "lucide-react";
 import { useAuth } from "../../../store/AuthContext.jsx";
 
 export default function Topbar() {
@@ -40,13 +41,13 @@ export default function Topbar() {
             className="flex items-center gap-3 rounded-full py-1 pl-1 pr-2 hover:bg-mist transition"
           >
             <img
-              src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=80&h=80&q=80"
-              alt="Anurag"
+              src={user?.avatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=80&h=80&q=80"}
+              alt={user?.name || "Anurag"}
               className="h-8 w-8 rounded-full object-cover border border-line"
             />
             <span className="hidden text-left sm:block">
               <span className="block text-sm font-bold leading-tight text-ink">
-                {user?.email?.split("@")[0] || "Anurag"}
+                {user?.name || user?.email?.split("@")[0] || "Anurag"}
               </span>
               <span className="block text-[10px] font-semibold leading-tight text-accent mt-0.5">
                 Pro Plan
@@ -60,9 +61,16 @@ export default function Topbar() {
               <div className="px-3 py-2 text-xs border-b border-line text-slate">
                 Signed in as <span className="font-semibold text-ink">{user?.email || "anurag@example.com"}</span>
               </div>
+              <Link
+                to="/dashboard/settings"
+                onClick={() => setMenuOpen(false)}
+                className="mt-1 flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-slate hover:bg-mist hover:text-ink transition"
+              >
+                <Settings size={14} /> Account Settings
+              </Link>
               <button
                 onClick={logout}
-                className="mt-1 flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-sm text-slate hover:bg-mist hover:text-red-600 transition"
+                className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-slate hover:bg-mist hover:text-red-600 transition border-t border-line mt-1 pt-2"
               >
                 <LogOut size={14} /> Log out
               </button>

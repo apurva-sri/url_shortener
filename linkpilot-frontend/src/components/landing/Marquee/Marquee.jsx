@@ -10,11 +10,6 @@ const ITEMS = [
   { icon: Clock, label: "Expiry scheduling" },
 ];
 
-/**
- * LinkPilot feature marquee
- * Reference: Realrun.com.au — a continuous horizontal band of logos/labels
- * drifting at constant speed, pausing gently on hover.
- */
 export default function Marquee() {
   const track = [...ITEMS, ...ITEMS]; // duplicate for seamless loop
 
