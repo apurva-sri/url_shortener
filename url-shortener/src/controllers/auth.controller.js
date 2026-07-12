@@ -68,10 +68,30 @@ const resendOTP = catchAsync(async (req, res) => {
   });
 });
 
+const updateProfile = catchAsync(async (req, res) => {
+  const result = await authService.updateProfile(req.user.id, req.body);
+
+  return successResponse(res, {
+    statusCode: 200,
+    message: "Profile updated successfully",
+    data: result,
+  });
+});
+
+const changePassword = catchAsync(async (req, res) => {
+  await authService.changePassword(req.user.id, req.body);
+
+  return successResponse(res, {
+    statusCode: 200,
+    message: "Password updated successfully",
+  });
+});
+
 module.exports = {
   register,
   login,
   verifyEmail,
-  // testEmail,
   resendOTP,
+  updateProfile,
+  changePassword,
 };

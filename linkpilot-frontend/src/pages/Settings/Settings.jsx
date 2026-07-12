@@ -11,6 +11,7 @@ import {
   Loader2,
 } from "lucide-react";
 import Button from "../../components/common/Button/Button.jsx";
+import { updateProfile, changePassword } from "../../api/auth.api.js";
 
 const INVOICES = [
   { id: "INV-2026-003", date: "Jul 01, 2026", amount: "$15.00", status: "Paid" },
@@ -60,27 +61,22 @@ export default function Settings() {
     setLoading(true);
     setMessage(null);
 
-    // Simulate API delay
-    setTimeout(() => {
-      try {
-        setSession({
-          user: {
-            ...user,
-            name,
-            username,
-            phone,
-            avatar,
-          },
-        });
+    updateProfile({ name, username, phone, avatar })
+      .then((res) => {
         setLoading(false);
-        setMessage({ type: "success", text: "Profile settings saved successfully!" });
+        if (res.success && res.data) {
+          setSession({ user: res.data });
+          setMessage({ type: "success", text: "Profile settings saved successfully!" });
+        } else {
+          setMessage({ type: "error", text: res.message || "Failed to update profile." });
+        }
         setTimeout(() => setMessage(null), 4000);
-      } catch (err) {
+      })
+      .catch((err) => {
         setLoading(false);
-        setMessage({ type: "error", text: "Failed to save settings. Local storage full?" });
-        console.error(err);
-      }
-    }, 800);
+        setMessage({ type: "error", text: err.message || "Failed to update profile." });
+        setTimeout(() => setMessage(null), 4000);
+      });
   };
 
   const handleSecuritySubmit = (e) => {
@@ -99,15 +95,24 @@ export default function Settings() {
 
     setLoading(true);
 
-    // Simulate API delay
-    setTimeout(() => {
-      setLoading(false);
-      setMessage({ type: "success", text: "Password updated successfully!" });
-      setCurrentPassword("");
-      setNewPassword("");
-      setConfirmPassword("");
-      setTimeout(() => setMessage(null), 4000);
-    }, 800);
+    changePassword({ currentPassword, newPassword })
+      .then((res) => {
+        setLoading(false);
+        if (res.success) {
+          setMessage({ type: "success", text: "Password updated successfully!" });
+          setCurrentPassword("");
+          setNewPassword("");
+          setConfirmPassword("");
+        } else {
+          setMessage({ type: "error", text: res.message || "Failed to change password." });
+        }
+        setTimeout(() => setMessage(null), 4000);
+      })
+      .catch((err) => {
+        setLoading(false);
+        setMessage({ type: "error", text: err.message || "Failed to change password." });
+        setTimeout(() => setMessage(null), 4000);
+      });
   };
 
   const handleDownloadInvoice = (invoiceId) => {

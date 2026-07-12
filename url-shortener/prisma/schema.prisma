@@ -12,6 +12,10 @@ model User {
   email     String   @unique
   password  String?
   isVerified Boolean @default(false)
+  name      String?
+  username  String?  @unique
+  phone     String?
+  avatar    String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   urls      Url[]

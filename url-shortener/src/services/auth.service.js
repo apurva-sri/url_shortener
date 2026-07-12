@@ -177,9 +177,73 @@ const resendOTP = async ({ email }) => {
   };
 };
 
+const updateProfile = async (userId, { name, username, phone, avatar }) => {
+  if (username) {
+    const existing = await prisma.user.findFirst({
+      where: {
+        username,
+        id: { not: userId },
+      },
+    });
+
+    if (existing) {
+      throw new ApiError(409, "Username already taken");
+    }
+  }
+
+  const updatedUser = await prisma.user.update({
+    where: { id: userId },
+    data: {
+      name,
+      username,
+      phone,
+      avatar,
+    },
+    select: {
+      id: true,
+      email: true,
+      name: true,
+      username: true,
+      phone: true,
+      avatar: true,
+      createdAt: true,
+    },
+  });
+
+  return updatedUser;
+};
+
+const changePassword = async (userId, { currentPassword, newPassword }) => {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+  });
+
+  if (!user || !user.password) {
+    throw new ApiError(404, "User not found or password not set");
+  }
+
+  const isMatch = await bcrypt.compare(currentPassword, user.password);
+  if (!isMatch) {
+    throw new ApiError(400, "Incorrect current password");
+  }
+
+  const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+  await prisma.user.update({
+    where: { id: userId },
+    data: {
+      password: hashedPassword,
+    },
+  });
+
+  return true;
+};
+
 module.exports = {
   register,
   login,
   verifyEmail,
   resendOTP,
+  updateProfile,
+  changePassword,
 };
