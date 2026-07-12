@@ -1,0 +1,16 @@
+:root {
+  --lp-black: #000000;
+  --lp-near-black: #111111;
+  --lp-gray: #6b7280;
+  --lp-gray-light: #e5e5e5;
+  --lp-gray-lighter: #f5f5f5;
+  --lp-white: #ffffff;
+  --lp-accent: #6366f1;
+
+  --lp-radius-sm: 10px;
+  --lp-radius-md: 16px;
+  --lp-radius-pill: 999px;
+
+  --lp-nav-height: 76px;
+  --lp-ease-pilot: cubic-bezier(0.22, 1, 0.36, 1);
+}

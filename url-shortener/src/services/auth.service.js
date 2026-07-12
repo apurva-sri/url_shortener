@@ -5,6 +5,7 @@ const ApiError = require("../utils/ApiError");
 const otpService = require("./otp.service");
 const emailService = require("./email.service");
 const verifyEmailTemplate = require("../templates/verifyEmail.template");
+const logger = require("../utils/logger");
 
 const register = async ({ email, password }) => {
   const existingUser = await prisma.user.findUnique({
@@ -36,7 +37,8 @@ const register = async ({ email, password }) => {
 
     await emailService.sendEmail({
       to: email,
-      ...emailContent,
+      subject: "Verify Your Email - LinkPilot",
+      html: emailContent,
     });
 
     return {
@@ -166,7 +168,8 @@ const resendOTP = async ({ email }) => {
 
   await emailService.sendEmail({
     to: email,
-    ...emailContent,
+    subject: "Verify Your Email - LinkPilot",
+    html: emailContent,
   });
 
   return {

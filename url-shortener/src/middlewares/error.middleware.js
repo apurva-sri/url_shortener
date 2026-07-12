@@ -1,4 +1,5 @@
 const { errorResponse } = require("../utils/apiResponse");
+const logger = require("../utils/logger");
 
 const errorMiddleware = (err, req, res, next) => {
   logger.error(err);

@@ -49,6 +49,3 @@ app.get("/:shortCode", urlController.redirectUrl);
 app.use(errorMiddleware);
 
 module.exports = app;
-
-// Phase 10 — Batch 2
-// Health Check + Graceful Shutdown

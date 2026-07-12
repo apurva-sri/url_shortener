@@ -169,6 +169,7 @@ const getMyUrls = async (userId, page, limit, search, sortBy, order) => {
         clicks: true,
         isActive: true,
         createdAt: true,
+        password: true,
       },
     }),
 

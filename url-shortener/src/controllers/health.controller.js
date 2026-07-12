@@ -1,5 +1,6 @@
 const prisma = require("../config/db");
 const { redisClient } = require("../config/redis");
+const logger = require("../utils/logger");
 
 const healthCheck = async (req, res) => {
   let database = "disconnected";

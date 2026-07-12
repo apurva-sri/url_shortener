@@ -1,6 +1,6 @@
 const nodemailer = require("nodemailer");
 const env = require("../config/env");
-
+const logger = require("../utils/logger");
 // logger.info(env.SMTP_EMAIL);
 // logger.info(env.SMTP_PASSWORD);
 const transporter = nodemailer.createTransport({
