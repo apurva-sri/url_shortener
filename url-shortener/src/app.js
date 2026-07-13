@@ -44,6 +44,9 @@ app.get("/", (req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/url", urlRoutes);
 app.use("/api/analytics", analyticsRoutes);
+app.get("/favicon.ico", (req, res) => {
+  res.status(204).end();
+});
 app.get("/:shortCode", urlController.redirectUrl);
 
 app.use(errorMiddleware);
