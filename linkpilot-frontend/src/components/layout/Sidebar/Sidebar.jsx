@@ -27,7 +27,8 @@ const SOON = [
 ];
 
 export default function Sidebar({ onClose }) {
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
+  const currentPlan = (user?.plan || "FREE").toUpperCase();
 
   return (
     <aside className="flex h-screen w-64 shrink-0 flex-col border-r border-line bg-white px-4 py-6">
