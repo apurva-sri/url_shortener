@@ -7,3 +7,7 @@ export const createOrder = (plan) =>
 // POST /api/payments/verify — body: { razorpay_order_id, razorpay_payment_id, razorpay_signature, plan }
 export const verifyPayment = (payload) =>
   api.post("/payments/verify", payload).then((res) => res.data);
+
+// GET /api/payments/invoices — returns user invoice history
+export const getMyInvoices = () =>
+  api.get("/payments/invoices").then((res) => res.data);

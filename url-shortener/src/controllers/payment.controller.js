@@ -23,7 +23,17 @@ const verifyPayment = catchAsync(async (req, res) => {
   });
 });
 
+const getMyInvoices = catchAsync(async (req, res) => {
+  const invoices = await paymentService.getMyInvoices(req.user.id);
+  return successResponse(res, {
+    statusCode: 200,
+    message: "Invoices retrieved successfully",
+    data: invoices,
+  });
+});
+
 module.exports = {
   createOrder,
   verifyPayment,
+  getMyInvoices,
 };

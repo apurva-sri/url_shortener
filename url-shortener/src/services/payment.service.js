@@ -76,6 +76,25 @@ const verifyPayment = async (userId, { razorpay_order_id, razorpay_payment_id, r
     throw new ApiError(400, "Invalid payment signature. Verification failed.");
   }
 
+  // Create Invoice Record in DB
+  const invoiceNumber = `INV-${Date.now().toString().slice(-6)}-${Math.floor(1000 + Math.random() * 9000)}`;
+  try {
+    await prisma.invoice.create({
+      data: {
+        invoiceNumber,
+        amount: PLAN_PRICES[targetPlan]?.amount || 100,
+        currency: "INR",
+        plan: targetPlan,
+        razorpayOrderId: razorpay_order_id,
+        razorpayPaymentId: razorpay_payment_id,
+        status: "PAID",
+        userId,
+      },
+    });
+  } catch (err) {
+    console.error("Failed to save invoice record:", err);
+  }
+
   // Update user plan directly in DB
   const updatedUser = await prisma.user.update({
     where: { id: userId },
@@ -97,7 +116,15 @@ const verifyPayment = async (userId, { razorpay_order_id, razorpay_payment_id, r
   return updatedUser;
 };
 
+const getMyInvoices = async (userId) => {
+  return await prisma.invoice.findMany({
+    where: { userId },
+    orderBy: { createdAt: "desc" },
+  });
+};
+
 module.exports = {
   createOrder,
   verifyPayment,
+  getMyInvoices,
 };

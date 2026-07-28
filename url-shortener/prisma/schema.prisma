@@ -20,6 +20,7 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   urls      Url[]
+  invoices  Invoice[]
 }
 
 model Url {
@@ -44,4 +45,18 @@ model Click {
   createdAt DateTime @default(now())
   urlId     String
   url       Url      @relation(fields: [urlId], references: [id])
+}
+
+model Invoice {
+  id                String   @id @default(uuid())
+  invoiceNumber     String   @unique
+  amount            Int
+  currency          String   @default("INR")
+  plan              String
+  razorpayOrderId   String?
+  razorpayPaymentId String?
+  status            String   @default("PAID")
+  createdAt         DateTime @default(now())
+  userId            String
+  user              User     @relation(fields: [userId], references: [id])
 }

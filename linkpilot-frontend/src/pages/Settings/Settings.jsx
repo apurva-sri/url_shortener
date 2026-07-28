@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "../../store/AuthContext.jsx";
 import {
   User as UserIcon,
@@ -9,10 +10,11 @@ import {
   AlertCircle,
   Loader2,
   Sparkles,
+  FileText,
 } from "lucide-react";
 import Button from "../../components/common/Button/Button.jsx";
 import { updateProfile, changePassword } from "../../api/auth.api.js";
-import { createOrder, verifyPayment } from "../../api/payment.api.js";
+import { createOrder, verifyPayment, getMyInvoices } from "../../api/payment.api.js";
 
 const loadRazorpayScript = () => {
   return new Promise((resolve) => {
@@ -30,6 +32,82 @@ export default function Settings() {
   const [activeTab, setActiveTab] = useState("profile"); // profile, security, billing
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState(null); // { type: 'success'|'error', text: '' }
+
+  // Fetch Invoices
+  const { data: invoicesData, isLoading: invoicesLoading, refetch: refetchInvoices } = useQuery({
+    queryKey: ["my-invoices"],
+    queryFn: getMyInvoices,
+    enabled: activeTab === "billing",
+  });
+
+  const invoices = invoicesData?.data || [];
+
+  const handleDownloadInvoice = (invoice) => {
+    const win = window.open("", "_blank", "width=800,height=900");
+    if (!win) return;
+    const html = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Invoice ${invoice.invoiceNumber}</title>
+          <style>
+            body { font-family: 'Segoe UI', Roboto, sans-serif; padding: 40px; color: #0f172a; line-height: 1.6; }
+            .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 20px; }
+            .logo { font-size: 24px; font-weight: 800; color: #6366F1; }
+            .badge { background: #dcfce7; color: #15803d; font-size: 11px; font-weight: bold; padding: 4px 12px; border-radius: 99px; }
+            .details { margin-top: 30px; display: flex; justify-content: space-between; }
+            .table { width: 100%; border-collapse: collapse; margin-top: 30px; }
+            .table th, .table td { border: 1px solid #e2e8f0; padding: 12px; text-align: left; font-size: 13px; }
+            .table th { background: #f8fafc; font-weight: 600; text-transform: uppercase; font-size: 11px; color: #64748b; }
+            .total { margin-top: 24px; text-align: right; font-size: 18px; font-weight: bold; color: #0f172a; }
+            .btn { background: #6366F1; color: white; border: none; padding: 10px 24px; border-radius: 10px; cursor: pointer; font-weight: bold; margin-top: 30px; }
+            @media print { .btn { display: none; } }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <div class="logo">🚀 LinkPilot</div>
+            <span class="badge">PAID</span>
+          </div>
+          <div class="details">
+            <div>
+              <h3 style="margin:0 0 8px 0; color:#6366F1;">INVOICE RECEIPT</h3>
+              <p style="margin:2px 0;"><strong>Invoice #:</strong> ${invoice.invoiceNumber}</p>
+              <p style="margin:2px 0;"><strong>Date:</strong> ${new Date(invoice.createdAt).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}</p>
+              <p style="margin:2px 0;"><strong>Payment ID:</strong> ${invoice.razorpayPaymentId || "pay_verified"}</p>
+            </div>
+            <div style="text-align:right;">
+              <h3 style="margin:0 0 8px 0;">Billed To</h3>
+              <p style="margin:2px 0;"><strong>${user?.name || user?.email?.split("@")[0] || "Customer"}</strong></p>
+              <p style="margin:2px 0; color:#64748b;">${user?.email || ""}</p>
+            </div>
+          </div>
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Description</th>
+                <th>Billing Cycle</th>
+                <th>Amount Paid</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>LinkPilot <strong>${invoice.plan}</strong> Plan Subscription</td>
+                <td>Monthly Access</td>
+                <td>₹${(invoice.amount / 100).toFixed(2)} ${invoice.currency}</td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="total">
+            Total Paid: ₹${(invoice.amount / 100).toFixed(2)}
+          </div>
+          <button class="btn" onclick="window.print()">Download / Print PDF</button>
+        </body>
+      </html>
+    `;
+    win.document.write(html);
+    win.document.close();
+  };
 
   // Profile Form States
   const [name, setName] = useState(user?.name || user?.email?.split("@")[0] || "");
@@ -154,6 +232,7 @@ export default function Settings() {
             if (verifyRes?.data) {
               setSession({ user: verifyRes.data });
               setMessage({ type: "success", text: `Payment successful! Upgraded to ${targetPlan} plan.` });
+              refetchInvoices();
             }
           } catch (err) {
             setMessage({ type: "error", text: err.response?.data?.message || "Payment verification failed." });
@@ -574,6 +653,60 @@ export default function Settings() {
                     </Button>
                   )}
                 </div>
+              </div>
+
+              {/* Invoice History Section */}
+              <div className="space-y-4 pt-6 border-t border-line">
+                <div>
+                  <h3 className="font-display text-base font-bold text-ink">Billing & Invoice History</h3>
+                  <p className="text-slate text-xs mt-1">View and download official PDF tax invoices for your subscription payments.</p>
+                </div>
+
+                {invoicesLoading ? (
+                  <div className="py-8 grid place-items-center"><Loader2 className="animate-spin text-accent" size={20} /></div>
+                ) : invoices.length === 0 ? (
+                  <div className="rounded-xl border border-line bg-mist/20 px-6 py-8 text-center">
+                    <p className="text-xs text-slate font-medium">No paid invoices found. When you upgrade your plan, your invoice will appear here.</p>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto rounded-xl border border-line bg-white">
+                    <table className="w-full text-left text-xs">
+                      <thead className="bg-mist/50 border-b border-line text-slate font-semibold uppercase">
+                        <tr>
+                          <th className="px-4 py-3">Invoice #</th>
+                          <th className="px-4 py-3">Date</th>
+                          <th className="px-4 py-3">Plan</th>
+                          <th className="px-4 py-3">Amount</th>
+                          <th className="px-4 py-3">Status</th>
+                          <th className="px-4 py-3 text-right">Action</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-line">
+                        {invoices.map((inv) => (
+                          <tr key={inv.id} className="hover:bg-mist/20 transition">
+                            <td className="px-4 py-3 font-semibold text-ink">{inv.invoiceNumber}</td>
+                            <td className="px-4 py-3 text-slate">{new Date(inv.createdAt).toLocaleDateString()}</td>
+                            <td className="px-4 py-3 font-bold text-accent">{inv.plan}</td>
+                            <td className="px-4 py-3 font-semibold text-ink">₹{(inv.amount / 100).toFixed(2)}</td>
+                            <td className="px-4 py-3">
+                              <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full text-[10px] font-bold">
+                                {inv.status}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3 text-right">
+                              <button
+                                onClick={() => handleDownloadInvoice(inv)}
+                                className="font-semibold text-accent hover:underline text-xs flex items-center gap-1 ml-auto"
+                              >
+                                Download PDF
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
               </div>
             </div>
           )}
