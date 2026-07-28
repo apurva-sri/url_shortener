@@ -1,11 +1,26 @@
 const prisma = require("../config/db");
 const env = require("../config/env");
 const crypto = require("crypto");
+const Razorpay = require("razorpay");
 const ApiError = require("../utils/ApiError");
 
 const PLAN_PRICES = {
   STARTER: { amount: 100, currency: "INR", label: "Starter Plan (₹1 Test)" }, // 100 paise = ₹1
   PRO: { amount: 200, currency: "INR", label: "Pro Plan (₹2 Test)" },         // 200 paise = ₹2
+};
+
+const getRazorpayInstance = () => {
+  const keyId = env.RAZORPAY_KEY_ID;
+  const keySecret = env.RAZORPAY_KEY_SECRET;
+
+  if (!keyId || !keySecret || keyId === "rzp_test_dummy_key") {
+    throw new ApiError(400, "Razorpay API keys not configured. Please set RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET in backend environment variables.");
+  }
+
+  return new Razorpay({
+    key_id: keyId,
+    key_secret: keySecret,
+  });
 };
 
 const createOrder = async (userId, plan) => {
@@ -14,22 +29,11 @@ const createOrder = async (userId, plan) => {
     throw new ApiError(400, "Invalid plan specified. Choose STARTER or PRO.");
   }
 
+  const razorpay = getRazorpayInstance();
   const planDetails = PLAN_PRICES[targetPlan];
-  const keyId = env.RAZORPAY_KEY_ID;
-  const keySecret = env.RAZORPAY_KEY_SECRET;
 
-  if (!keyId || !keySecret || keyId === "rzp_test_dummy_key") {
-    throw new ApiError(400, "Razorpay API keys not configured. Please set RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET in backend environment variables.");
-  }
-
-  const authHeader = Buffer.from(`${keyId}:${keySecret}`).toString("base64");
-  const response = await fetch("https://api.razorpay.com/v1/orders", {
-    method: "POST",
-    headers: {
-      "Authorization": `Basic ${authHeader}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
+  try {
+    const order = await razorpay.orders.create({
       amount: planDetails.amount,
       currency: planDetails.currency,
       receipt: `receipt_${userId.substring(0, 8)}_${Date.now()}`,
@@ -37,23 +41,18 @@ const createOrder = async (userId, plan) => {
         userId,
         plan: targetPlan,
       },
-    }),
-  });
+    });
 
-  if (!response.ok) {
-    const errText = await response.text();
-    throw new ApiError(500, `Razorpay Order Creation Failed: ${errText}`);
+    return {
+      orderId: order.id,
+      amount: planDetails.amount,
+      currency: planDetails.currency,
+      keyId: env.RAZORPAY_KEY_ID,
+      plan: targetPlan,
+    };
+  } catch (err) {
+    throw new ApiError(500, `Razorpay Order Creation Error: ${err.message || err}`);
   }
-
-  const orderData = await response.json();
-
-  return {
-    orderId: orderData.id,
-    amount: planDetails.amount,
-    currency: planDetails.currency,
-    keyId: env.RAZORPAY_KEY_ID,
-    plan: targetPlan,
-  };
 };
 
 const verifyPayment = async (userId, { razorpay_order_id, razorpay_payment_id, razorpay_signature, plan }) => {
