@@ -94,4 +94,5 @@ module.exports = {
   resendOTP,
   updateProfile,
   changePassword,
+  testEmail,
 };

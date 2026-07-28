@@ -14,7 +14,7 @@ const { protect } = require("../middlewares/auth.middleware");
 router.post("/register", validate(registerSchema), authController.register);
 router.post("/login", validate(loginSchema), authController.login);
 router.post("/verify-email",validate(verifyEmailSchema),authController.verifyEmail);
-// router.post("/test-email", authController.testEmail);
+router.post("/test-email", validate(resendOTPSchema), authController.testEmail);
 router.post("/resend-otp", validate(resendOTPSchema), authController.resendOTP);
 
 router.put("/profile", protect, authController.updateProfile);
