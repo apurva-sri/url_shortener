@@ -19,5 +19,6 @@ router.post("/resend-otp", validate(resendOTPSchema), authController.resendOTP);
 
 router.put("/profile", protect, authController.updateProfile);
 router.put("/password", protect, authController.changePassword);
+router.get("/me", protect, authController.getMe);
 
 module.exports = router;

@@ -16,6 +16,10 @@ export const login = (payload) =>
 export const resendOTP = (payload) =>
   api.post("/auth/resend-otp", payload).then((res) => res.data);
 
+// GET /api/auth/me — returns fresh user profile from DB
+export const getMe = () =>
+  api.get("/auth/me").then((res) => res.data);
+
 // PUT /api/auth/profile — body: { name, username, phone, avatar }
 export const updateProfile = (payload) =>
   api.put("/auth/profile", payload).then((res) => res.data);
@@ -23,3 +27,4 @@ export const updateProfile = (payload) =>
 // PUT /api/auth/password — body: { currentPassword, newPassword }
 export const changePassword = (payload) =>
   api.put("/auth/password", payload).then((res) => res.data);
+

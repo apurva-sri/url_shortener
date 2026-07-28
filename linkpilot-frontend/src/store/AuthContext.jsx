@@ -1,4 +1,5 @@
-import { createContext, useContext, useState, useCallback } from "react";
+import { createContext, useContext, useState, useCallback, useEffect } from "react";
+import { getMe } from "../api/auth.api.js";
 
 const AuthContext = createContext(null);
 
@@ -24,6 +25,28 @@ export function AuthProvider({ children }) {
   }, []);
 
   const isAuthenticated = Boolean(localStorage.getItem("lp_token"));
+
+  // Always fetch fresh profile from server on mount so username/name/avatar
+  // changes made on another device are reflected immediately on this one.
+  useEffect(() => {
+    const token = localStorage.getItem("lp_token");
+    if (!token) return;
+
+    getMe()
+      .then((res) => {
+        if (res?.data) {
+          const freshUser = res.data;
+          localStorage.setItem("lp_user", JSON.stringify(freshUser));
+          setUser(freshUser);
+        }
+      })
+      .catch(() => {
+        // Token expired or invalid — clear and force re-login
+        localStorage.removeItem("lp_token");
+        localStorage.removeItem("lp_user");
+        setUser(null);
+      });
+  }, []);
 
   return (
     <AuthContext.Provider value={{ user, isAuthenticated, setSession, logout }}>

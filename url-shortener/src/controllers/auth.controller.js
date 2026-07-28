@@ -87,6 +87,21 @@ const changePassword = catchAsync(async (req, res) => {
   });
 });
 
+const getMe = catchAsync(async (req, res) => {
+  // req.user is set by the protect middleware from the JWT
+  const prisma = require("../config/prisma");
+  const user = await prisma.user.findUnique({
+    where: { id: req.user.id },
+    select: { id: true, email: true, name: true, username: true, phone: true, avatar: true, isVerified: true },
+  });
+
+  return successResponse(res, {
+    statusCode: 200,
+    message: "Profile fetched successfully",
+    data: user,
+  });
+});
+
 module.exports = {
   register,
   login,
@@ -95,4 +110,5 @@ module.exports = {
   updateProfile,
   changePassword,
   testEmail,
+  getMe,
 };

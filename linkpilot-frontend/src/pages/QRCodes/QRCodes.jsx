@@ -21,7 +21,8 @@ export default function QRCodes() {
   const [format, setFormat] = useState("PNG");
   const [qrBase64, setQrBase64] = useState("");
   const [canvasError, setCanvasError] = useState("");
-  
+  const [canvasReady, setCanvasReady] = useState(false);
+
   const canvasRef = useRef(null);
 
   // Fetch all user URLs
@@ -38,6 +39,7 @@ export default function QRCodes() {
     if (activeUrl) {
       setSelectedUrlId(activeUrl.id);
       setQrName(activeUrl.shortCode ? `QR Code - /${activeUrl.shortCode}` : "");
+      setCanvasReady(false);
 
       const fetchQR = async () => {
         try {
@@ -53,7 +55,7 @@ export default function QRCodes() {
 
       fetchQR();
     }
-  }, [activeUrl]);
+  }, [activeUrl?.id]);
 
   // Draw customized QR code on canvas whenever inputs change
   useEffect(() => {
@@ -62,14 +64,17 @@ export default function QRCodes() {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
+    setCanvasReady(false);
     const ctx = canvas.getContext("2d");
+
     const img = new Image();
+    // Allow cross-origin images so getImageData doesn't taint the canvas
+    img.crossOrigin = "anonymous";
     img.src = qrBase64;
 
     img.onload = () => {
       // Clear canvas
       ctx.clearRect(0, 0, 300, 300);
-      
       // Draw standard QR Code
       ctx.drawImage(img, 0, 0, 300, 300);
 
@@ -78,7 +83,6 @@ export default function QRCodes() {
         const imgData = ctx.getImageData(0, 0, 300, 300);
         const data = imgData.data;
 
-        // Convert hex values to RGB
         const hexToRgb = (hex) => {
           const bigint = parseInt(hex.replace("#", ""), 16);
           return {
@@ -95,8 +99,6 @@ export default function QRCodes() {
           const r = data[i];
           const g = data[i + 1];
           const b = data[i + 2];
-
-          // Check if pixel is dark (part of QR modules) or light (background)
           const isDark = r < 120 && g < 120 && b < 120;
 
           if (isDark) {
@@ -112,59 +114,70 @@ export default function QRCodes() {
 
         ctx.putImageData(imgData, 0, 0);
 
-        // Add Center Logo Overlay (Paper Plane SVG)
+        // Draw center logo overlay
         const logoSize = 56;
         const logoX = (300 - logoSize) / 2;
         const logoY = (300 - logoSize) / 2;
 
-        // Draw a clean background badge for the logo in the center
         ctx.fillStyle = bgColor;
         ctx.beginPath();
-        // Rounded square center container
         ctx.roundRect(logoX - 4, logoY - 4, logoSize + 8, logoSize + 8, 12);
         ctx.fill();
 
-        // Load and draw the brand logo mark
         const logoImg = new Image();
+        logoImg.crossOrigin = "anonymous";
         logoImg.src = "/logo/linkpilot-mark.svg";
         logoImg.onload = () => {
           ctx.drawImage(logoImg, logoX, logoY, logoSize, logoSize);
+          setCanvasReady(true); // ✅ Canvas fully drawn — download is safe now
+        };
+        logoImg.onerror = () => {
+          // Logo failed to load, but QR is still valid — allow download
+          setCanvasReady(true);
         };
       } catch (err) {
         console.error("Canvas draw error:", err);
+        setCanvasError("Failed to apply color customization.");
+        setCanvasReady(true); // Still allow download even without color change
       }
+    };
+
+    img.onerror = () => {
+      setCanvasError("Failed to load QR image.");
     };
   }, [qrBase64, fgColor, bgColor, design]);
 
   const handleDownload = () => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas || !canvasReady) return;
 
     const shortCode = activeUrl?.shortCode || "link";
     const filename = `linkpilot-qr-${shortCode}`;
 
-    if (format === "PNG") {
-      const link = document.createElement("a");
-      link.download = `${filename}.png`;
-      link.href = canvas.toDataURL("image/png");
-      link.click();
-    } else {
-      // SVG format: wrap PNG in an SVG container
-      const pngData = canvas.toDataURL("image/png");
-      const svgString = `
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300" width="300" height="300">
-  <image href="${pngData}" x="0" y="0" width="300" height="300" />
-</svg>
-      `.trim();
-      const blob = new Blob([svgString], { type: "image/svg+xml;charset=utf-8" });
-      const url = URL.createObjectURL(blob);
-      
-      const link = document.createElement("a");
-      link.download = `${filename}.svg`;
-      link.href = url;
-      link.click();
-      
-      URL.revokeObjectURL(url);
+    try {
+      if (format === "PNG") {
+        const link = document.createElement("a");
+        link.download = `${filename}.png`;
+        link.href = canvas.toDataURL("image/png");
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } else {
+        const pngData = canvas.toDataURL("image/png");
+        const svgString = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300" width="300" height="300"><image href="${pngData}" x="0" y="0" width="300" height="300" /></svg>`;
+        const blob = new Blob([svgString], { type: "image/svg+xml;charset=utf-8" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.download = `${filename}.svg`;
+        link.href = url;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      }
+    } catch (err) {
+      console.error("Download failed:", err);
+      setCanvasError("Download failed. The QR image may have cross-origin restrictions.");
     }
   };
 
@@ -283,15 +296,23 @@ export default function QRCodes() {
             </div>
           </div>
 
-          <Button onClick={handleDownload} className="w-full py-2.5 flex items-center justify-center gap-2 mt-4">
-            <Download size={16} /> Download QR Code
+          <Button
+            onClick={handleDownload}
+            disabled={!canvasReady}
+            className="w-full py-2.5 flex items-center justify-center gap-2 mt-4 disabled:opacity-50 disabled:cursor-wait"
+          >
+            {canvasReady ? (
+              <><Download size={16} /> Download QR Code</>
+            ) : (
+              <><Loader2 size={16} className="animate-spin" /> Preparing QR...</>
+            )}
           </Button>
         </div>
 
         {/* Right Preview Panel — appears first on mobile */}
         <div className="order-first md:order-last md:col-span-2 flex flex-col items-center justify-center rounded-2xl border border-line bg-paper p-6 shadow-sm gap-6 relative overflow-hidden">
           <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808005_1px,transparent_1px),linear-gradient(to_bottom,#80808005_1px,transparent_1px)] bg-[size:16px_16px]" />
-          
+
           <div className="z-10 bg-white p-5 rounded-2xl shadow-md border border-line flex items-center justify-center relative">
             {!qrBase64 ? (
               <div className="flex flex-col items-center gap-2 w-[240px] h-[240px] justify-center">
@@ -308,6 +329,11 @@ export default function QRCodes() {
             )}
             {canvasError && <p className="text-red-500 text-xs mt-2">{canvasError}</p>}
           </div>
+
+          {/* Ready indicator */}
+          <p className={`z-10 text-xs font-medium transition-all ${canvasReady ? "text-emerald-600" : "text-slate"}`}>
+            {canvasReady ? "✅ QR ready to download" : "⏳ Rendering QR..."}
+          </p>
 
           {/* Format selector */}
           <div className="z-10 flex gap-2 rounded-full border border-line bg-white p-1">

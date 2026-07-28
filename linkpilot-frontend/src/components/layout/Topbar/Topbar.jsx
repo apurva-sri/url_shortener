@@ -1,13 +1,30 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Search, Bell, ChevronDown, LogOut, Settings, Menu } from "lucide-react";
+import { Search, Bell, ChevronDown, LogOut, Settings, Menu, Sun, Moon } from "lucide-react";
 import { useAuth } from "../../../store/AuthContext.jsx";
 
 export default function Topbar({ onMenuToggle }) {
   const { user, logout } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [dark, setDark] = useState(() => document.documentElement.classList.contains("dark"));
 
-  const initials = (user?.email || "U").slice(0, 2).toUpperCase();
+  const toggleTheme = () => {
+    const isDark = document.documentElement.classList.toggle("dark");
+    setDark(isDark);
+    localStorage.setItem("lp_theme", isDark ? "dark" : "light");
+  };
+
+  // Sync theme state with localStorage preference on mount
+  useEffect(() => {
+    const saved = localStorage.getItem("lp_theme");
+    if (saved === "dark") {
+      document.documentElement.classList.add("dark");
+      setDark(true);
+    } else if (saved === "light") {
+      document.documentElement.classList.remove("dark");
+      setDark(false);
+    }
+  }, []);
 
   return (
     <header className="flex h-16 items-center justify-between border-b border-line bg-white px-4 sm:px-6 shrink-0 gap-3">
@@ -32,8 +49,18 @@ export default function Topbar({ onMenuToggle }) {
         </kbd>
       </div>
 
-      <div className="flex items-center gap-4">
-        {/* Notifications Button */}
+      <div className="flex items-center gap-2 sm:gap-3">
+        {/* Dark / Light Mode Toggle */}
+        <button
+          onClick={toggleTheme}
+          aria-label="Toggle theme"
+          title={dark ? "Switch to light mode" : "Switch to dark mode"}
+          className="grid h-9 w-9 place-items-center rounded-full border border-line text-slate hover:bg-mist hover:text-ink transition"
+        >
+          {dark ? <Sun size={16} /> : <Moon size={16} />}
+        </button>
+
+        {/* Notifications */}
         <button
           aria-label="Notifications"
           className="relative grid h-9 w-9 place-items-center rounded-full border border-line text-slate hover:bg-mist hover:text-ink transition"
@@ -47,16 +74,16 @@ export default function Topbar({ onMenuToggle }) {
         <div className="relative font-display">
           <button
             onClick={() => setMenuOpen((o) => !o)}
-            className="flex items-center gap-3 rounded-full py-1 pl-1 pr-2 hover:bg-mist transition"
+            className="flex items-center gap-2 sm:gap-3 rounded-full py-1 pl-1 pr-2 hover:bg-mist transition"
           >
             <img
               src={user?.avatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=80&h=80&q=80"}
-              alt={user?.name || "Anurag"}
+              alt={user?.name || "User"}
               className="h-8 w-8 rounded-full object-cover border border-line"
             />
             <span className="hidden text-left sm:block">
               <span className="block text-sm font-bold leading-tight text-ink">
-                {user?.name || user?.email?.split("@")[0] || "Anurag"}
+                {user?.name || user?.email?.split("@")[0] || "User"}
               </span>
               <span className="block text-[10px] font-semibold leading-tight text-accent mt-0.5">
                 Pro Plan
@@ -68,7 +95,7 @@ export default function Topbar({ onMenuToggle }) {
           {menuOpen && (
             <div className="absolute right-0 top-12 z-20 w-48 rounded-xl border border-line bg-white p-1 shadow-lg">
               <div className="px-3 py-2 text-xs border-b border-line text-slate">
-                Signed in as <span className="font-semibold text-ink">{user?.email || "anurag@example.com"}</span>
+                Signed in as <span className="font-semibold text-ink">{user?.email || "user@example.com"}</span>
               </div>
               <Link
                 to="/dashboard/settings"
