@@ -3,9 +3,9 @@ version: '3.8'
 services:
   api:
     build:
-      context: .
+      context: ./url-shortener
       dockerfile: Dockerfile
-    container_name: url-shortener-api
+    container_name: linkpilot-api
     restart: unless-stopped
     ports:
       - "5000:5000"
@@ -16,7 +16,18 @@ services:
       - postgres
       - redis
     env_file:
-      - .env
+      - ./url-shortener/.env
+
+  frontend:
+    build:
+      context: ./linkpilot-frontend
+      dockerfile: Dockerfile
+    container_name: linkpilot-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    depends_on:
+      - api
 
   postgres:
     image: postgres:17
