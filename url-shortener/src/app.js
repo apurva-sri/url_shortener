@@ -14,9 +14,9 @@ const authRoutes = require("./routes/auth.routes");
 const analyticsRoutes = require("./routes/analytics.routes");
 
 const app = express();
+app.set("trust proxy", 1);
 
-app.disable("x-powered-by");//by default express send X-Powered-By: Express so attackers immediately know that the backend is built using express so to avoid this we disable it. 
-//helmet doesn't disable this header automatically
+app.disable("x-powered-by");
 
 app.use(express.json());
 
