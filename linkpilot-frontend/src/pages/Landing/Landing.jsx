@@ -370,7 +370,7 @@ export default function Landing() {
               price="0"
               description="Perfect for starting out and basic shortening needs."
               features={[
-                "Unlimited shortened links",
+                "2 active links limit",
                 "Standard black & white QR codes",
                 "Basic redirection logs",
                 "1 active project",
@@ -380,12 +380,29 @@ export default function Landing() {
               billingPeriod={billingPeriod}
             />
 
+            {/* Starter Plan */}
+            <PricingCard
+              title="Starter Plan"
+              price={billingPeriod === "monthly" ? "1" : "0.80"}
+              description="For individual creators needing custom aliases & analytics."
+              features={[
+                "10 active links limit",
+                "Custom aliases & tags",
+                "Branded customized QR codes",
+                "Deep device & visitor analytics",
+              ]}
+              ctaText="Get Starter"
+              ctaLink="/register"
+              billingPeriod={billingPeriod}
+            />
+
             {/* Pro Plan */}
             <PricingCard
               title="Pro Plan"
               price={billingPeriod === "monthly" ? "19" : "15"}
-              description="For growing brands who need advanced tracking & design."
+              description="For growing brands who need advanced tracking & link security."
               features={[
+                "Unlimited shortened links",
                 "Custom aliases & tags",
                 "Password protection on links",
                 "Branded customized QR codes",
@@ -395,23 +412,6 @@ export default function Landing() {
               ctaText="Upgrade to Pro"
               ctaLink="/register"
               popular={true}
-              billingPeriod={billingPeriod}
-            />
-
-            {/* Enterprise */}
-            <PricingCard
-              title="Enterprise"
-              price="Custom"
-              description="For businesses requiring absolute scale and SLAs."
-              features={[
-                "High volume click capacity",
-                "Dedicated API access key",
-                "SSO & advanced security settings",
-                "Custom contracts & SLAs",
-                "24/7 dedicated support",
-              ]}
-              ctaText="Contact sales"
-              ctaLink="mailto:notify.ap.sri@gmail.com"
               billingPeriod={billingPeriod}
             />
           </div>
