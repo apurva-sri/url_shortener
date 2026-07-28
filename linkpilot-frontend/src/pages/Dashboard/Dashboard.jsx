@@ -331,7 +331,7 @@ export default function Dashboard() {
 
       {/* Clicks Overview Area Chart */}
       <div className="rounded-2xl border border-line bg-white p-6 shadow-sm">
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-3">
           <div>
             <h3 className="text-base font-bold text-ink">Clicks Overview</h3>
             <p className="text-xs text-slate mt-0.5">Visual representation of links performance</p>
@@ -447,11 +447,11 @@ export default function Dashboard() {
             <table className="w-full text-left text-sm border-collapse">
               <thead>
                 <tr className="text-xs font-semibold uppercase tracking-wider text-slate border-b border-line bg-mist/30">
-                  <th className="px-5 py-3.5">Link Details</th>
-                  <th className="px-5 py-3.5">Created</th>
-                  <th className="px-5 py-3.5 text-center">Clicks</th>
-                  <th className="px-5 py-3.5 text-center">Unique Clicks</th>
-                  <th className="px-5 py-3.5 text-right">Actions</th>
+                  <th className="px-4 py-3.5 sm:px-5">Link Details</th>
+                  <th className="hidden sm:table-cell px-5 py-3.5">Created</th>
+                  <th className="px-4 py-3.5 sm:px-5 text-center">Clicks</th>
+                  <th className="hidden lg:table-cell px-5 py-3.5 text-center">Unique Clicks</th>
+                  <th className="px-4 py-3.5 sm:px-5 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-line">
@@ -490,7 +490,7 @@ export default function Dashboard() {
                           </div>
                         </div>
                       </td>
-                      <td className="px-5 py-4 text-slate">
+                      <td className="hidden sm:table-cell px-5 py-4 text-slate">
                         <div className="flex items-center gap-1.5 text-xs">
                           <Calendar size={13} />
                           {new Date(u.createdAt).toLocaleDateString("en-US", {
@@ -500,10 +500,10 @@ export default function Dashboard() {
                           })}
                         </div>
                       </td>
-                      <td className="px-5 py-4 text-center text-ink font-semibold">
+                      <td className="px-4 sm:px-5 py-4 text-center text-ink font-semibold">
                         {u.clicks}
                       </td>
-                      <td className="px-5 py-4 text-center text-slate font-medium">
+                      <td className="hidden lg:table-cell px-5 py-4 text-center text-slate font-medium">
                         {Math.round(u.clicks * 0.85)}
                       </td>
                       <td className="relative px-5 py-4 text-right">

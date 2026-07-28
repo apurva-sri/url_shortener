@@ -316,7 +316,7 @@ export default function Analytics() {
                   <thead>
                     <tr className="text-xs font-semibold uppercase tracking-wider text-slate border-b border-line">
                       <th className="py-2.5">Browser / Device</th>
-                      <th className="py-2.5">IP Address</th>
+                      <th className="hidden sm:table-cell py-2.5">IP Address</th>
                       <th className="py-2.5">Visited At</th>
                     </tr>
                   </thead>
@@ -331,7 +331,7 @@ export default function Analytics() {
                             </span>
                           </div>
                         </td>
-                        <td className="py-3 text-slate font-medium">{v.ipAddress || "masked"}</td>
+                        <td className="hidden sm:table-cell py-3 text-slate font-medium">{v.ipAddress || "masked"}</td>
                         <td className="py-3 text-slate">
                           <div className="flex items-center gap-1.5 text-xs">
                             <Calendar size={13} />

@@ -73,7 +73,7 @@ export default function MyLinks() {
 
   return (
     <div className="font-display max-w-7xl mx-auto space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-start sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-ink">My Links</h1>
           <p className="mt-1 text-sm text-slate">

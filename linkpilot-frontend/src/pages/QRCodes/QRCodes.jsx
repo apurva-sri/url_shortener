@@ -196,8 +196,8 @@ export default function QRCodes() {
       </div>
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-5">
-        {/* Left Form Panel */}
-        <div className="md:col-span-3 rounded-2xl border border-line bg-white p-6 shadow-sm space-y-5">
+        {/* Left Form Panel — appears second on mobile, first on md+ */}
+        <div className="order-last md:order-first md:col-span-3 rounded-2xl border border-line bg-white p-6 shadow-sm space-y-5">
           <h2 className="text-base font-bold text-ink border-b border-line pb-3">Create QR Code</h2>
 
           {/* Link Picker */}
@@ -288,8 +288,8 @@ export default function QRCodes() {
           </Button>
         </div>
 
-        {/* Right Preview Panel */}
-        <div className="md:col-span-2 flex flex-col items-center justify-center rounded-2xl border border-line bg-paper p-6 shadow-sm gap-6 relative overflow-hidden">
+        {/* Right Preview Panel — appears first on mobile */}
+        <div className="order-first md:order-last md:col-span-2 flex flex-col items-center justify-center rounded-2xl border border-line bg-paper p-6 shadow-sm gap-6 relative overflow-hidden">
           <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808005_1px,transparent_1px),linear-gradient(to_bottom,#80808005_1px,transparent_1px)] bg-[size:16px_16px]" />
           
           <div className="z-10 bg-white p-5 rounded-2xl shadow-md border border-line flex items-center justify-center relative">
