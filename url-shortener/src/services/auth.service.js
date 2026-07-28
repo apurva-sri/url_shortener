@@ -145,6 +145,11 @@ const login = async ({ email, password }) => {
     user: {
       id: user.id,
       email: user.email,
+      name: user.name,
+      username: user.username,
+      phone: user.phone,
+      avatar: user.avatar,
+      plan: user.plan || "FREE",
       createdAt: user.createdAt,
     },
     token,
@@ -219,6 +224,7 @@ const updateProfile = async (userId, { name, username, phone, avatar }) => {
       username: true,
       phone: true,
       avatar: true,
+      plan: true,
       createdAt: true,
     },
   });

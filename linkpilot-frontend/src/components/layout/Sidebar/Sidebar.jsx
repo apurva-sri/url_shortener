@@ -99,16 +99,28 @@ export default function Sidebar({ onClose }) {
         </button>
       </nav>
 
-      {/* Pro Upgrade Card */}
+      {/* Plan Card */}
       <div className="mt-4 mb-4 rounded-xl border border-line bg-paper p-4 relative overflow-hidden shrink-0">
         <div className="absolute -right-4 -bottom-4 w-12 h-12 bg-accent/5 rounded-full" />
-        <h4 className="font-display text-xs font-bold text-ink">Upgrade to Pro</h4>
+        <h4 className="font-display text-xs font-bold text-ink">
+          {currentPlan === "PRO" ? "Pro Plan Active 🚀" : currentPlan === "STARTER" ? "Starter Plan ($1/mo)" : "Free Plan ($0/mo)"}
+        </h4>
         <p className="mt-1 text-[11px] text-slate leading-relaxed">
-          Unlock advanced features and grow your brand.
+          {currentPlan === "PRO"
+            ? "You have unlimited links & all features unlocked."
+            : currentPlan === "STARTER"
+            ? "10 links limit. Upgrade to Pro for unlimited links & passwords."
+            : "2 links limit. Upgrade for custom aliases & higher limits."}
         </p>
-        <button className="mt-3 w-full rounded-lg bg-ink py-2 text-xs font-semibold text-white transition hover:bg-ink/90">
-          Upgrade Now
-        </button>
+        {currentPlan !== "PRO" && (
+          <NavLink
+            to="/dashboard/settings"
+            onClick={onClose}
+            className="mt-3 block text-center w-full rounded-lg bg-ink py-2 text-xs font-semibold text-white transition hover:bg-ink/90"
+          >
+            Upgrade Plan
+          </NavLink>
+        )}
       </div>
 
       {/* Logout button */}

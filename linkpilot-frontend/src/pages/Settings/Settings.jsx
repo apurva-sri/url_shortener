@@ -8,10 +8,22 @@ import {
   CheckCircle2,
   AlertCircle,
   Loader2,
+  Sparkles,
 } from "lucide-react";
 import Button from "../../components/common/Button/Button.jsx";
 import { updateProfile, changePassword } from "../../api/auth.api.js";
+import { createOrder, verifyPayment } from "../../api/payment.api.js";
 
+const loadRazorpayScript = () => {
+  return new Promise((resolve) => {
+    if (window.Razorpay) return resolve(true);
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
+  });
+};
 
 export default function Settings() {
   const { user, setSession } = useAuth();
@@ -108,9 +120,87 @@ export default function Settings() {
       });
   };
 
-  const handleDownloadInvoice = (invoiceId) => {
-    alert(`Downloading invoice ${invoiceId} in PDF format...`);
+  const handleUpgrade = async (targetPlan) => {
+    setLoading(true);
+    setMessage(null);
+
+    try {
+      const orderRes = await createOrder(targetPlan);
+      const orderData = orderRes.data;
+
+      // Test mode / Dev fallback if dummy key configured
+      if (orderData.keyId === "rzp_test_dummy_key") {
+        const verifyRes = await verifyPayment({
+          razorpay_order_id: orderData.orderId,
+          razorpay_payment_id: "pay_dummy_" + Date.now(),
+          razorpay_signature: "dummy_sig",
+          plan: targetPlan,
+        });
+
+        if (verifyRes?.data) {
+          setSession({ user: verifyRes.data });
+          setMessage({ type: "success", text: `Successfully upgraded to ${targetPlan} plan!` });
+        }
+        setLoading(false);
+        return;
+      }
+
+      // Real Razorpay Checkout integration
+      const loaded = await loadRazorpayScript();
+      if (!loaded) {
+        setMessage({ type: "error", text: "Failed to load Razorpay payment SDK." });
+        setLoading(false);
+        return;
+      }
+
+      const options = {
+        key: orderData.keyId,
+        amount: orderData.amount,
+        currency: orderData.currency,
+        name: "LinkPilot",
+        description: `Upgrade to ${targetPlan} Plan`,
+        order_id: orderData.orderId,
+        handler: async (response) => {
+          try {
+            const verifyRes = await verifyPayment({
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+              plan: targetPlan,
+            });
+            if (verifyRes?.data) {
+              setSession({ user: verifyRes.data });
+              setMessage({ type: "success", text: `Payment successful! Upgraded to ${targetPlan} plan.` });
+            }
+          } catch (err) {
+            setMessage({ type: "error", text: err.response?.data?.message || "Payment verification failed." });
+          } finally {
+            setLoading(false);
+          }
+        },
+        prefill: {
+          name: user?.name || "",
+          email: user?.email || "",
+          contact: user?.phone || "",
+        },
+        theme: {
+          color: "#6366F1",
+        },
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.on("payment.failed", (response) => {
+        setMessage({ type: "error", text: response.error.description || "Payment failed." });
+        setLoading(false);
+      });
+      rzp.open();
+    } catch (err) {
+      setMessage({ type: "error", text: err.response?.data?.message || err.message || "Failed to initiate checkout." });
+      setLoading(false);
+    }
   };
+
+  const currentPlan = (user?.plan || "FREE").toUpperCase();
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">
@@ -133,7 +223,7 @@ export default function Settings() {
       )}
 
       <div className="flex flex-col md:flex-row gap-6 items-start">
-        {/* Navigation Tabs (Left Sidebar layout on desktop) */}
+        {/* Navigation Tabs */}
         <div className="w-full md:w-64 rounded-2xl border border-line bg-white p-2.5 flex md:flex-col gap-1 overflow-x-auto md:overflow-x-visible no-scrollbar shrink-0">
           <button
             onClick={() => { setActiveTab("profile"); setMessage(null); }}
@@ -166,7 +256,7 @@ export default function Settings() {
             }`}
           >
             <CreditCard size={18} />
-            Billing & Invoices
+            Billing & Subscriptions
           </button>
         </div>
 
@@ -321,41 +411,185 @@ export default function Settings() {
             </form>
           )}
 
-          {/* BILLING PANEL */}
+          {/* BILLING & SUBSCRIPTIONS PANEL */}
           {activeTab === "billing" && (
             <div className="space-y-8">
               <div>
-                <h2 className="font-display text-lg font-bold text-ink border-b border-line pb-2.5">Plan &amp; Subscriptions</h2>
-                <p className="text-slate text-xs mt-1">Review your current plan and usage.</p>
+                <h2 className="font-display text-lg font-bold text-ink border-b border-line pb-2.5">Plans &amp; Subscriptions</h2>
+                <p className="text-slate text-xs mt-1">Upgrade your subscription tier with Razorpay checkout or manage existing plan limits.</p>
               </div>
 
-              {/* Free Plan Card */}
-              <div className="rounded-2xl border border-line bg-mist/30 p-6 flex flex-col gap-4">
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate bg-mist border border-line px-2 py-0.5 rounded-full">
-                    FREE PLAN
-                  </span>
-                </div>
-                <h3 className="font-display text-xl font-bold text-ink">LinkPilot Free</h3>
-                <p className="text-xs text-slate max-w-md">
-                  You are on the free plan. All core features — link shortening, QR codes, and click analytics — are fully available.
-                </p>
-                <div className="flex flex-wrap items-center gap-4 text-xs font-semibold text-ink pt-2">
+              {/* 3-Card Pricing Table */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {/* FREE PLAN ($0) */}
+                <div className={`rounded-2xl border p-6 flex flex-col justify-between transition-all ${currentPlan === "FREE" ? "border-accent bg-accent-50/20 shadow-sm" : "border-line bg-white"}`}>
                   <div>
-                    <span className="text-slate font-medium block">Billing Cycle:</span>
-                    <span>No active subscription</span>
-                  </div>
-                </div>
-              </div>
+                    <div className="flex justify-between items-center mb-2">
+                      <h3 className="font-display text-lg font-bold text-ink">Free Plan</h3>
+                      {currentPlan === "FREE" && (
+                        <span className="bg-mist border border-line text-ink text-[10px] font-bold px-2 py-0.5 rounded-full">
+                          Current Plan
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs text-slate min-h-[36px]">Perfect for starting out and basic link shortening needs.</p>
+                    <div className="my-4">
+                      <span className="text-3xl font-extrabold text-ink">$0</span>
+                      <span className="text-xs text-slate">/mo</span>
+                    </div>
 
-              {/* Invoice History */}
-              <div className="space-y-4">
-                <div>
-                  <h3 className="font-display text-base font-bold text-ink">Billing Invoice History</h3>
-                  <p className="text-slate text-xs mt-1">No invoices yet — you haven't made any payments.</p>
+                    <ul className="space-y-2.5 text-xs text-slate mb-6">
+                      <li className="flex items-center gap-2">
+                        <CheckCircle2 size={14} className="text-emerald-600 shrink-0" />
+                        <span><strong>2 active links</strong> limit</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <CheckCircle2 size={14} className="text-emerald-600 shrink-0" />
+                        <span>Standard black & white QR codes</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <CheckCircle2 size={14} className="text-emerald-600 shrink-0" />
+                        <span>Basic redirection logs</span>
+                      </li>
+                      <li className="flex items-center gap-2 opacity-50">
+                        <AlertCircle size={14} className="text-slate shrink-0" />
+                        <span className="line-through">Custom aliases & tags</span>
+                      </li>
+                      <li className="flex items-center gap-2 opacity-50">
+                        <AlertCircle size={14} className="text-slate shrink-0" />
+                        <span className="line-through">Password protection</span>
+                      </li>
+                    </ul>
+                  </div>
+
+                  <button
+                    disabled
+                    className="w-full py-2.5 rounded-xl border border-line bg-mist text-ink font-semibold text-xs opacity-70 cursor-default"
+                  >
+                    {currentPlan === "FREE" ? "Current Plan" : "Free Tier"}
+                  </button>
                 </div>
-                <div className="rounded-xl border border-line bg-mist/20 px-6 py-10 text-center">
-                  <p className="text-sm text-slate font-medium">No billing history available.</p>
+
+                {/* STARTER PLAN ($1) */}
+                <div className={`rounded-2xl border p-6 flex flex-col justify-between transition-all ${currentPlan === "STARTER" ? "border-accent bg-accent-50/20 shadow-sm" : "border-line bg-white"}`}>
+                  <div>
+                    <div className="flex justify-between items-center mb-2">
+                      <h3 className="font-display text-lg font-bold text-ink">Starter Plan</h3>
+                      {currentPlan === "STARTER" && (
+                        <span className="bg-accent text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+                          Current Plan
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs text-slate min-h-[36px]">For individual creators needing custom aliases & analytics.</p>
+                    <div className="my-4">
+                      <span className="text-3xl font-extrabold text-ink">$1</span>
+                      <span className="text-xs text-slate">/mo</span>
+                    </div>
+
+                    <ul className="space-y-2.5 text-xs text-slate mb-6">
+                      <li className="flex items-center gap-2">
+                        <CheckCircle2 size={14} className="text-emerald-600 shrink-0" />
+                        <span><strong>10 active links</strong> limit</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <CheckCircle2 size={14} className="text-emerald-600 shrink-0" />
+                        <span>Custom aliases & tags</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <CheckCircle2 size={14} className="text-emerald-600 shrink-0" />
+                        <span>Branded customized QR codes</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <CheckCircle2 size={14} className="text-emerald-600 shrink-0" />
+                        <span>Deep device & visitor analytics</span>
+                      </li>
+                      <li className="flex items-center gap-2 opacity-50">
+                        <AlertCircle size={14} className="text-slate shrink-0" />
+                        <span className="line-through">Password protection (Pro only)</span>
+                      </li>
+                    </ul>
+                  </div>
+
+                  {currentPlan === "STARTER" ? (
+                    <button disabled className="w-full py-2.5 rounded-xl border border-line bg-mist text-ink font-semibold text-xs opacity-70">
+                      Current Plan
+                    </button>
+                  ) : (
+                    <Button
+                      onClick={() => handleUpgrade("STARTER")}
+                      disabled={loading}
+                      className="w-full py-2.5 text-xs flex items-center justify-center gap-1.5"
+                    >
+                      {loading && <Loader2 className="animate-spin" size={14} />}
+                      Upgrade to Starter ($1)
+                    </Button>
+                  )}
+                </div>
+
+                {/* PRO PLAN ($19) */}
+                <div className={`relative rounded-2xl border p-6 flex flex-col justify-between transition-all ${currentPlan === "PRO" ? "border-accent bg-accent-50/20 shadow-md" : "border-accent bg-white shadow-sm"}`}>
+                  <div className="absolute -top-3 right-6 bg-accent text-white text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full shadow-sm flex items-center gap-1">
+                    <Sparkles size={11} /> MOST POPULAR
+                  </div>
+
+                  <div>
+                    <div className="flex justify-between items-center mb-2">
+                      <h3 className="font-display text-lg font-bold text-ink">Pro Plan</h3>
+                      {currentPlan === "PRO" && (
+                        <span className="bg-accent text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+                          Current Plan
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs text-slate min-h-[36px]">For growing brands who need advanced tracking & link security.</p>
+                    <div className="my-4">
+                      <span className="text-3xl font-extrabold text-ink">$19</span>
+                      <span className="text-xs text-slate">/mo</span>
+                    </div>
+
+                    <ul className="space-y-2.5 text-xs text-slate mb-6">
+                      <li className="flex items-center gap-2">
+                        <CheckCircle2 size={14} className="text-emerald-600 shrink-0" />
+                        <span><strong>Unlimited</strong> shortened links</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <CheckCircle2 size={14} className="text-emerald-600 shrink-0" />
+                        <span>Custom aliases & tags</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <CheckCircle2 size={14} className="text-emerald-600 shrink-0" />
+                        <span><strong>Password protection</strong> on links</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <CheckCircle2 size={14} className="text-emerald-600 shrink-0" />
+                        <span>Branded customized QR codes</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <CheckCircle2 size={14} className="text-emerald-600 shrink-0" />
+                        <span>Deep device/visitor analytics</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <CheckCircle2 size={14} className="text-emerald-600 shrink-0" />
+                        <span>Custom domains integration</span>
+                      </li>
+                    </ul>
+                  </div>
+
+                  {currentPlan === "PRO" ? (
+                    <button disabled className="w-full py-2.5 rounded-xl border border-line bg-mist text-ink font-semibold text-xs opacity-70">
+                      Current Plan
+                    </button>
+                  ) : (
+                    <Button
+                      onClick={() => handleUpgrade("PRO")}
+                      disabled={loading}
+                      className="w-full py-2.5 text-xs bg-accent hover:bg-accent/90 text-white flex items-center justify-center gap-1.5"
+                    >
+                      {loading && <Loader2 className="animate-spin" size={14} />}
+                      Upgrade to Pro ($19)
+                    </Button>
+                  )}
                 </div>
               </div>
             </div>

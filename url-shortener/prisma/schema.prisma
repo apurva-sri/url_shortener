@@ -16,6 +16,7 @@ model User {
   username  String?  @unique
   phone     String?
   avatar    String?
+  plan      String   @default("FREE")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   urls      Url[]

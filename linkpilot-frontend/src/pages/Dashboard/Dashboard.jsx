@@ -662,7 +662,19 @@ function CreateLinkModal({ open, onClose, onCreated }) {
           onChange={(e) => setExpiresAt(e.target.value)}
         />
 
-        {error && <p className="text-sm text-red-600 font-medium">{error}</p>}
+        {error && (
+          <div className="rounded-xl bg-amber-50 border border-amber-200 p-3.5 text-xs text-amber-800 font-semibold space-y-2">
+            <p>{error}</p>
+            {error.toLowerCase().includes("upgrade") && (
+              <a
+                href="/dashboard/settings"
+                className="inline-block rounded-lg bg-accent px-3 py-1.5 text-white font-bold text-[11px] hover:bg-accent/90 transition shadow-xs"
+              >
+                Go to Billing & Upgrade Plan →
+              </a>
+            )}
+          </div>
+        )}
 
         <Button type="submit" loading={mutation.isPending} className="w-full">
           Create link

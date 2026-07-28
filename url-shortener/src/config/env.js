@@ -32,6 +32,9 @@ const env = cleanEnv(process.env, {
   CLOUDINARY_AVATAR_FOLDER: str({ default: "linkPilot/Profile_photo" }),
   SENDER_EMAIL: str(),
   SENDER_NAME: str({ default: "LinkPilot" }),
+
+  RAZORPAY_KEY_ID: str({ default: "rzp_test_dummy_key" }),
+  RAZORPAY_KEY_SECRET: str({ default: "dummy_secret" }),
 });
 
 module.exports = env;

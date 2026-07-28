@@ -301,7 +301,19 @@ function CreateLinkForm({ onClose, onCreated }) {
         onChange={(e) => setExpiresAt(e.target.value)}
       />
 
-      {error && <p className="sm:col-span-4 text-sm text-red-600 font-medium">{error}</p>}
+      {error && (
+        <div className="sm:col-span-4 rounded-xl bg-amber-50 border border-amber-200 p-3 text-xs text-amber-800 font-semibold flex items-center justify-between gap-2">
+          <span>{error}</span>
+          {error.toLowerCase().includes("upgrade") && (
+            <a
+              href="/dashboard/settings"
+              className="shrink-0 rounded-lg bg-accent px-3 py-1 text-white font-bold text-[11px] hover:bg-accent/90 transition shadow-xs"
+            >
+              Upgrade Plan →
+            </a>
+          )}
+        </div>
+      )}
 
       <div className="flex gap-2 sm:col-span-4 mt-2">
         <Button type="submit" loading={mutation.isPending}>
@@ -395,7 +407,19 @@ function PasswordProtectionModal({ open, onClose, url, onSaved }) {
             onChange={(e) => setPassword(e.target.value)}
           />
 
-          {error && <p className="text-sm text-red-600 font-semibold">{error}</p>}
+          {error && (
+            <div className="rounded-xl bg-amber-50 border border-amber-200 p-3.5 text-xs text-amber-800 font-semibold space-y-2">
+              <p>{error}</p>
+              {error.toLowerCase().includes("upgrade") && (
+                <a
+                  href="/dashboard/settings"
+                  className="inline-block rounded-lg bg-accent px-3 py-1.5 text-white font-bold text-[11px] hover:bg-accent/90 transition shadow-xs"
+                >
+                  Upgrade to Pro ($19/mo) →
+                </a>
+              )}
+            </div>
+          )}
 
           <Button type="submit" loading={saving} className="w-full flex items-center justify-center gap-2">
             <Lock size={16} /> Enable Password Protection

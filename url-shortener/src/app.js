@@ -12,6 +12,7 @@ const urlRoutes = require("./routes/url.routes");
 const urlController = require("./controllers/url.controller");
 const authRoutes = require("./routes/auth.routes");
 const analyticsRoutes = require("./routes/analytics.routes");
+const paymentRoutes = require("./routes/payment.routes");
 
 const app = express();
 app.set("trust proxy", 1);
@@ -44,6 +45,7 @@ app.get("/", (req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/url", urlRoutes);
 app.use("/api/analytics", analyticsRoutes);
+app.use("/api/payments", paymentRoutes);
 app.get("/favicon.ico", (req, res) => {
   res.status(204).end();
 });

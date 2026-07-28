@@ -86,7 +86,7 @@ export default function Topbar({ onMenuToggle }) {
                 {user?.name || user?.email?.split("@")[0] || "User"}
               </span>
               <span className="block text-[10px] font-semibold leading-tight text-accent mt-0.5">
-                Pro Plan
+                {(user?.plan || "FREE").toUpperCase()} Plan
               </span>
             </span>
             <ChevronDown size={14} className="text-slate" />

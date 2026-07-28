@@ -16,8 +16,33 @@ const CLOUDINARY_QR_FOLDER = env.CLOUDINARY_QR_FOLDER || "linkPilot/qr_code";
 const redisKey = require("../utils/redisKey");
 
 const createShortUrl = async ({ originalUrl, alias, expiresAt, userId }) => {
-  if (alias && !userId) {
-    throw new ApiError(403, "Login required to use custom alias.");
+  let userPlan = "FREE";
+  if (userId) {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { plan: true },
+    });
+    userPlan = (user?.plan || "FREE").toUpperCase();
+  }
+
+  // 1. Custom Alias Check: Not allowed on FREE plan
+  if (alias && userPlan === "FREE") {
+    throw new ApiError(403, "Custom aliases are a paid feature. Upgrade to Starter ($1/mo) or Pro ($19/mo) to use custom aliases.");
+  }
+
+  // 2. Link Limit Check: FREE max 2, STARTER max 10, PRO unlimited
+  if (userId) {
+    const activeCount = await prisma.url.count({
+      where: { userId, isActive: true },
+    });
+
+    if (userPlan === "FREE" && activeCount >= 2) {
+      throw new ApiError(403, "Free plan is limited to 2 active links. Upgrade to Starter ($1/mo) or Pro ($19/mo) to create more.");
+    }
+
+    if (userPlan === "STARTER" && activeCount >= 10) {
+      throw new ApiError(403, "Starter plan is limited to 10 active links. Upgrade to Pro ($19/mo) for unlimited links.");
+    }
   }
 
   if (alias && RESERVED_ALIASES.includes(alias)) {
@@ -239,6 +264,16 @@ const deleteUrl = async (id, userId) => {
 };
 
 const enablePasswordProtection = async (id, userId, password) => {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { plan: true },
+  });
+
+  const userPlan = (user?.plan || "FREE").toUpperCase();
+  if (userPlan !== "PRO") {
+    throw new ApiError(403, "Password protection requires a Pro subscription ($19/mo). Please upgrade your plan.");
+  }
+
   const url = await prisma.url.findFirst({
     where: {
       id,

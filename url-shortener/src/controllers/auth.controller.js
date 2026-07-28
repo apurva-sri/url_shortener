@@ -92,7 +92,7 @@ const getMe = catchAsync(async (req, res) => {
   const prisma = require("../config/prisma");
   const user = await prisma.user.findUnique({
     where: { id: req.user.id },
-    select: { id: true, email: true, name: true, username: true, phone: true, avatar: true, isVerified: true },
+    select: { id: true, email: true, name: true, username: true, phone: true, avatar: true, isVerified: true, plan: true },
   });
 
   return successResponse(res, {
