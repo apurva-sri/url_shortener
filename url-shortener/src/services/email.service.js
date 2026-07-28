@@ -3,7 +3,7 @@ const env = require("../config/env");
 
 const sendEmail = async ({ to, subject, html }) => {
   await transporter.sendMail({
-    from: `"URL Shortener" <${env.SMTP_EMAIL}>`,
+    from: `"${env.SENDER_NAME}" <${env.SENDER_EMAIL}>`,
     to,
     subject,
     html,

@@ -28,6 +28,8 @@ const env = cleanEnv(process.env, {
   CLOUDINARY_API_SECRET: str(),
   CLOUDINARY_QR_FOLDER: str({ default: "linkPilot/qr_code" }),
   CLOUDINARY_AVATAR_FOLDER: str({ default: "linkPilot/Profile_photo" }),
+  SENDER_EMAIL: str(),
+  SENDER_NAME: str({ default: "LinkPilot" }),
 });
 
 module.exports = env;
