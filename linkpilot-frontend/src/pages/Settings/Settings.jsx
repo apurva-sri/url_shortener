@@ -128,24 +128,7 @@ export default function Settings() {
       const orderRes = await createOrder(targetPlan);
       const orderData = orderRes.data;
 
-      // Test mode / Dev fallback if dummy key configured
-      if (orderData.keyId === "rzp_test_dummy_key") {
-        const verifyRes = await verifyPayment({
-          razorpay_order_id: orderData.orderId,
-          razorpay_payment_id: "pay_dummy_" + Date.now(),
-          razorpay_signature: "dummy_sig",
-          plan: targetPlan,
-        });
-
-        if (verifyRes?.data) {
-          setSession({ user: verifyRes.data });
-          setMessage({ type: "success", text: `Successfully upgraded to ${targetPlan} plan!` });
-        }
-        setLoading(false);
-        return;
-      }
-
-      // Real Razorpay Checkout integration
+      // Real Razorpay Checkout integration — user must pay via Razorpay modal
       const loaded = await loadRazorpayScript();
       if (!loaded) {
         setMessage({ type: "error", text: "Failed to load Razorpay payment SDK." });

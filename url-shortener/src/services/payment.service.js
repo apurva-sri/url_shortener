@@ -18,38 +18,37 @@ const createOrder = async (userId, plan) => {
   const keyId = env.RAZORPAY_KEY_ID;
   const keySecret = env.RAZORPAY_KEY_SECRET;
 
-  let orderId = `order_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
-
-  if (keyId && keyId !== "rzp_test_dummy_key") {
-    const authHeader = Buffer.from(`${keyId}:${keySecret}`).toString("base64");
-    const response = await fetch("https://api.razorpay.com/v1/orders", {
-      method: "POST",
-      headers: {
-        "Authorization": `Basic ${authHeader}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        amount: planDetails.amount,
-        currency: planDetails.currency,
-        receipt: `receipt_${userId.substring(0, 8)}_${Date.now()}`,
-        notes: {
-          userId,
-          plan: targetPlan,
-        },
-      }),
-    });
-
-    if (!response.ok) {
-      const errText = await response.text();
-      throw new ApiError(500, `Razorpay Order Creation Failed: ${errText}`);
-    }
-
-    const orderData = await response.json();
-    orderId = orderData.id;
+  if (!keyId || !keySecret || keyId === "rzp_test_dummy_key") {
+    throw new ApiError(400, "Razorpay API keys not configured. Please set RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET in backend environment variables.");
   }
 
+  const authHeader = Buffer.from(`${keyId}:${keySecret}`).toString("base64");
+  const response = await fetch("https://api.razorpay.com/v1/orders", {
+    method: "POST",
+    headers: {
+      "Authorization": `Basic ${authHeader}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      amount: planDetails.amount,
+      currency: planDetails.currency,
+      receipt: `receipt_${userId.substring(0, 8)}_${Date.now()}`,
+      notes: {
+        userId,
+        plan: targetPlan,
+      },
+    }),
+  });
+
+  if (!response.ok) {
+    const errText = await response.text();
+    throw new ApiError(500, `Razorpay Order Creation Failed: ${errText}`);
+  }
+
+  const orderData = await response.json();
+
   return {
-    orderId,
+    orderId: orderData.id,
     amount: planDetails.amount,
     currency: planDetails.currency,
     keyId: env.RAZORPAY_KEY_ID,
@@ -63,18 +62,19 @@ const verifyPayment = async (userId, { razorpay_order_id, razorpay_payment_id, r
     throw new ApiError(400, "Invalid plan specified.");
   }
 
+  if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
+    throw new ApiError(400, "Missing required Razorpay payment verification parameters.");
+  }
+
   const keySecret = env.RAZORPAY_KEY_SECRET;
+  const body = `${razorpay_order_id}|${razorpay_payment_id}`;
+  const expectedSignature = crypto
+    .createHmac("sha256", keySecret)
+    .update(body.toString())
+    .digest("hex");
 
-  if (env.RAZORPAY_KEY_ID !== "rzp_test_dummy_key") {
-    const body = `${razorpay_order_id}|${razorpay_payment_id}`;
-    const expectedSignature = crypto
-      .createHmac("sha256", keySecret)
-      .update(body.toString())
-      .digest("hex");
-
-    if (expectedSignature !== razorpay_signature) {
-      throw new ApiError(400, "Invalid payment signature verification failed.");
-    }
+  if (expectedSignature !== razorpay_signature) {
+    throw new ApiError(400, "Invalid payment signature. Verification failed.");
   }
 
   // Update user plan directly in DB
