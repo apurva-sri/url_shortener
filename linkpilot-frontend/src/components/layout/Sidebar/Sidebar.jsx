@@ -34,8 +34,14 @@ export default function Sidebar({ onClose }) {
     <aside className="flex h-screen w-64 shrink-0 flex-col border-r border-line bg-white px-4 py-6">
       {/* Brand logo */}
       <div className="mb-6 flex items-center gap-2 px-2">
-        <img src="/logo/linkpilot-mark.svg" alt="LinkPilot" className="h-7 w-7" />
-        <span className="font-display text-lg font-bold text-ink">LinkPilot</span>
+        <img
+          src="/logo/linkpilot-mark.svg"
+          alt="LinkPilot"
+          className="h-7 w-7"
+        />
+        <span className="font-display text-lg font-bold text-ink">
+          LinkPilot
+        </span>
       </div>
 
       {/* Navigation menu */}
@@ -104,14 +110,18 @@ export default function Sidebar({ onClose }) {
       <div className="mt-4 mb-4 rounded-xl border border-line bg-paper p-4 relative overflow-hidden shrink-0">
         <div className="absolute -right-4 -bottom-4 w-12 h-12 bg-accent/5 rounded-full" />
         <h4 className="font-display text-xs font-bold text-ink">
-          {currentPlan === "PRO" ? "Pro Plan Active 🚀" : currentPlan === "STARTER" ? "Starter Plan ($1/mo)" : "Free Plan ($0/mo)"}
+          {currentPlan === "PRO"
+            ? "Pro Plan Active 🚀"
+            : currentPlan === "STARTER"
+              ? "Starter Plan ($1/mo)"
+              : "Free Plan ($0/mo)"}
         </h4>
         <p className="mt-1 text-[11px] text-slate leading-relaxed">
           {currentPlan === "PRO"
             ? "You have unlimited links & all features unlocked."
             : currentPlan === "STARTER"
-            ? "10 links limit. Upgrade to Pro for unlimited links & passwords."
-            : "2 links limit. Upgrade for custom aliases & higher limits."}
+              ? "10 links limit. Upgrade to Pro for unlimited links & passwords."
+              : "2 links limit. Upgrade for custom aliases & higher limits."}
         </p>
         {currentPlan !== "PRO" && (
           <NavLink

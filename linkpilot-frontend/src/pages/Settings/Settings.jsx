@@ -66,7 +66,10 @@ export default function Settings() {
         </head>
         <body>
           <div class="header">
-            <div class="logo">🚀 LinkPilot</div>
+            <div class="logo" style="display: flex; align-items: center; gap: 8px;">
+              <img src="${window.location.origin}/logo/linkpilot-mark.svg" alt="LinkPilot" style="height: 28px; width: 28px;" />
+              <span>LinkPilot</span>
+            </div>
             <span class="badge">PAID</span>
           </div>
           <div class="details">
