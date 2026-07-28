@@ -1,3 +1,6 @@
+const dns = require("dns");
+dns.setDefaultResultOrder("ipv4first");
+
 const app = require("./app");
 const { connectRedis, redisClient } = require("./config/redis");
 const prisma = require("./config/db");
