@@ -4,8 +4,8 @@ const crypto = require("crypto");
 const ApiError = require("../utils/ApiError");
 
 const PLAN_PRICES = {
-  STARTER: { amount: 8900, currency: "INR", label: "Starter Plan ($1)" }, // ₹89
-  PRO: { amount: 149900, currency: "INR", label: "Pro Plan ($19)" },      // ₹1499
+  STARTER: { amount: 100, currency: "INR", label: "Starter Plan (₹1 Test)" }, // 100 paise = ₹1
+  PRO: { amount: 200, currency: "INR", label: "Pro Plan (₹2 Test)" },         // 200 paise = ₹2
 };
 
 const createOrder = async (userId, plan) => {
