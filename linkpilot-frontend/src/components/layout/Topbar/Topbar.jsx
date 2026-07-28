@@ -1,24 +1,33 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Search, Bell, ChevronDown, LogOut, Settings } from "lucide-react";
+import { Search, Bell, ChevronDown, LogOut, Settings, Menu } from "lucide-react";
 import { useAuth } from "../../../store/AuthContext.jsx";
 
-export default function Topbar() {
+export default function Topbar({ onMenuToggle }) {
   const { user, logout } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
 
   const initials = (user?.email || "U").slice(0, 2).toUpperCase();
 
   return (
-    <header className="flex h-16 items-center justify-between border-b border-line bg-white px-6 shrink-0">
+    <header className="flex h-16 items-center justify-between border-b border-line bg-white px-4 sm:px-6 shrink-0 gap-3">
+      {/* Hamburger — mobile only */}
+      <button
+        onClick={onMenuToggle}
+        className="lg:hidden grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-line text-slate hover:bg-mist hover:text-ink transition"
+        aria-label="Open sidebar"
+      >
+        <Menu size={18} />
+      </button>
+
       {/* Search Bar */}
-      <div className="relative w-full max-w-sm">
+      <div className="relative flex-1 max-w-sm">
         <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate" />
         <input
           placeholder="Search anything..."
           className="w-full rounded-lg border border-line bg-mist py-2 pl-9 pr-12 text-sm text-ink placeholder:text-slate focus:outline-none focus:ring-2 focus:ring-accent/40"
         />
-        <kbd className="absolute right-3 top-1/2 -translate-y-1/2 rounded border border-line bg-white px-1.5 py-0.5 text-[10px] font-medium text-slate">
+        <kbd className="absolute right-3 top-1/2 -translate-y-1/2 rounded border border-line bg-white px-1.5 py-0.5 text-[10px] font-medium text-slate hidden sm:block">
           ⌘K
         </kbd>
       </div>

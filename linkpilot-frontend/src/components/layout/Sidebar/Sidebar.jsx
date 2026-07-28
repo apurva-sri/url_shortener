@@ -26,7 +26,7 @@ const SOON = [
   { label: "API", icon: Code2 },
 ];
 
-export default function Sidebar() {
+export default function Sidebar({ onClose }) {
   const { logout } = useAuth();
 
   return (
@@ -44,6 +44,7 @@ export default function Sidebar() {
             key={to}
             to={to}
             end={end}
+            onClick={onClose}
             className={({ isActive }) =>
               `flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition ${
                 isActive
@@ -59,6 +60,7 @@ export default function Sidebar() {
 
         <NavLink
           to="/dashboard/settings"
+          onClick={onClose}
           className={({ isActive }) =>
             `flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition ${
               isActive
