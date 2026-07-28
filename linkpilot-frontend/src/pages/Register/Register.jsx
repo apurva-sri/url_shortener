@@ -44,7 +44,20 @@ export default function Register() {
           onChange={(e) => setForm({ ...form, password: e.target.value })}
         />
 
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        {error && (
+          <div className="flex flex-col gap-1 items-start">
+            <p className="text-sm text-red-600">{error}</p>
+            {(error.includes("not verified") || error.includes("already registered")) && (
+              <button
+                type="button"
+                onClick={() => navigate("/verify-otp", { state: { email: form.email } })}
+                className="text-xs font-semibold text-accent hover:text-accent-600 underline"
+              >
+                Verify your email now →
+              </button>
+            )}
+          </div>
+        )}
 
         <Button type="submit" loading={mutation.isPending} className="mt-2 w-full">
           Create account

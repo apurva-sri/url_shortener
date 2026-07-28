@@ -17,8 +17,6 @@ export default function Login() {
   const mutation = useMutation({
     mutationFn: loginApi,
     onSuccess: (res) => {
-      // NOTE: adjust these keys once auth.service.js's login response shape
-      // is confirmed — assuming { token, user } inside `data` for now.
       setSession({ token: res.data.token, user: res.data.user });
       navigate("/dashboard");
     },
@@ -55,7 +53,20 @@ export default function Login() {
           onChange={(e) => setForm({ ...form, password: e.target.value })}
         />
 
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        {error && (
+          <div className="flex flex-col gap-1 items-start">
+            <p className="text-sm text-red-600">{error}</p>
+            {(error.includes("not verified") || error.includes("verify your email")) && (
+              <button
+                type="button"
+                onClick={() => navigate("/verify-otp", { state: { email: form.email } })}
+                className="text-xs font-semibold text-accent hover:text-accent-600 underline"
+              >
+                Verify your email now →
+              </button>
+            )}
+          </div>
+        )}
 
         <Button type="submit" loading={mutation.isPending} className="mt-2 w-full">
           Log in
