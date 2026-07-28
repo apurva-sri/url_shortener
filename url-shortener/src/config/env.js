@@ -19,9 +19,11 @@ const env = cleanEnv(process.env, {
 
   SMTP_PORT: port(),
 
-  SMTP_EMAIL: str(),
+  SMTP_EMAIL: str({ default: "" }),
 
-  SMTP_PASSWORD: str(),
+  SMTP_PASSWORD: str({ default: "" }),
+
+  BREVO_API_KEY: str(),
 
   CLOUDINARY_CLOUD_NAME: str(),
   CLOUDINARY_API_KEY: str(),
