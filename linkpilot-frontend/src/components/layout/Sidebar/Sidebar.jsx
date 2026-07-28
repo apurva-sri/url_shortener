@@ -22,8 +22,8 @@ const LINKS = [
 
 const SOON = [
   { label: "Custom Domains", icon: Globe },
-  { label: "Teams", icon: Users },
-  { label: "API", icon: Code2 },
+  // { label: "Teams", icon: Users },
+  // { label: "API", icon: Code2 },
 ];
 
 export default function Sidebar({ onClose }) {
